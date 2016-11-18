@@ -1,4 +1,5 @@
 /pidfile
 /composer.phar
 /vendor
-
+/composer.json
+/composer.lock
