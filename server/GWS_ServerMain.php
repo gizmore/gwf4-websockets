@@ -4,7 +4,7 @@
 */
 # Security headers
 
-require_once 'vendor/autoload.php';
+require_once 'module/Websockets/vendor/autoload.php';
 
 # Load config
 require_once 'protected/config.php'; # <-- You might need to adjust this path.
@@ -20,7 +20,7 @@ GWF_Debug::setMailOnError(false);
 $_GET['ajax'] = 1;
 
 # Init GWF
-$gwf = new GWF3(getcwd(), array(
+$gwf = new GWF4(getcwd(), array(
 # Default values
 	'init' => true,
 	'bootstrap' => true,
