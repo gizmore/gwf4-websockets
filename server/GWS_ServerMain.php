@@ -4,13 +4,13 @@
 */
 # Security headers
 
-require_once '../vendor/autoload.php';
+require_once 'vendor/autoload.php';
 
 # Load config
 require_once 'protected/config.php'; # <-- You might need to adjust this path.
 
 # Init GDO and GWF core
-require_once '../gwf3.class.php';
+require_once 'inc/gwf4.class.php';
 
 # Websockets
 
@@ -39,17 +39,18 @@ $gwf = new GWF3(getcwd(), array(
 ));
 
 
-# Load TGC
-if (false === ($tgc = GWF_Module::loadModuleDB("Tamagochi", true, true, true))) {
+# Load GWS
+if (false === ($gws = GWF_Module::loadModuleDB("Websockets", true, true, true))) {
 	die('Module not found.');
 }
 
-require_once 'TGC_Global.php';
-require_once 'TGC_ServerUtil.php';
-require_once 'TGC_Commands.php';
+require_once 'GWS_Global.php';
+require_once 'GWS_ServerUtil.php';
+require_once $gws->cfgWebsocketProcessorPath();
+require_once 'GWS_Server.php';
 
-require_once '../core/module/Tamagochi/server/TGC_Server.php';
+$processor = $gws->cfgWebsocketProcessorClass();
 
-$server = new TGC_Server();
-$server->initTamagochiServer();
+$server = new GWS_Server();
+$server->initGWSServer(new $processor());
 $server->mainloop();

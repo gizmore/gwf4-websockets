@@ -5,3 +5,12 @@ GWF4 Module for Ratchet Websockets.
 
 ### For TLS You will need NGINX
 
+#### Install Ratchet
+
+  http://socketo.me/docs/install
+  
+#### Create Own Command Handlers on Server
+
+
+#### Create Own Command Handler on Client
+
