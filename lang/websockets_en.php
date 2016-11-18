@@ -4,4 +4,7 @@ $lang = array(
 	'cfg_ws_processor_class' => 'Websocket Processor Classname',
 	'cfg_ws_url' => 'Websocket URL',
 	'cfg_ws_url' => 'Websocket URL TLS',
+		
+	'title_connect' => 'Websocket Connection',
+	'btn_connect' => 'connect'
 );

@@ -1,53 +1,49 @@
 'use strict';
-var TGC = angular.module('tgc');
-TGC.service('WebsocketSrvc', function($rootScope, $q, $injector, ConstSrvc, ErrorSrvc) {
+angular.module('gwf4').
+service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 	
 	var WebsocketSrvc = this;
-	
-	WebsocketSrvc.getPlayerSrvc = function() {
-		if (!WebsocketSrvc.PLAYERSERVICE) {
-			WebsocketSrvc.PLAYERSERVICE = $injector.get('PlayerSrvc');
-		}
-		return WebsocketSrvc.PLAYERSERVICE;
-	};
 	
 	WebsocketSrvc.NEXT_MID = 1000000;
 	WebsocketSrvc.SYNC_MSGS = {};
 	
 	WebsocketSrvc.SOCKET = null;
 	
-	WebsocketSrvc.QUEUE = [];
-	WebsocketSrvc.QUEUE_INTERVAL = null;
-	WebsocketSrvc.QUEUE_SEND_MILLIS = 250;
+//	WebsocketSrvc.QUEUE = [];
+//	WebsocketSrvc.QUEUE_INTERVAL = null;
+//	WebsocketSrvc.QUEUE_SEND_MILLIS = 250;
 	
+	////////////////
+	// Connection //
+	////////////////
 	WebsocketSrvc.connect = function() {
 		return $q(function(resolve, reject){
-			console.log('WebsocketSrvc.connect()', window.TGCConfig);
+			console.log('WebsocketSrvc.connect()', window.gwsConfig);
 			if (WebsocketSrvc.SOCKET == null) {
 				var ws = WebsocketSrvc.SOCKET = new WebSocket(ConstSrvc.websocketURL());
 				ws.onopen = function() {
 					WebsocketSrvc.startQueue();
 			    	resolve();
-			    	$rootScope.$broadcast('tgc-ws-open');
+			    	$rootScope.$broadcast('gws-ws-open');
 				};
 			    ws.onclose = function() {
-			    	WebsocketSrvc.disconnect();
-			    	$rootScope.$broadcast('tgc-ws-close');
+			    	$rootScope.$broadcast('gws-ws-close');
+			    	WebsocketSrvc.disconnect(false);
 			    };
 			    ws.onerror = function(error) {
-			    	WebsocketSrvc.disconnect();
+			    	WebsocketSrvc.disconnect(false);
 					reject(error);
 			    };
 			    ws.onmessage = function(message) {
-			    	if (message.data.indexOf('ERR') === 0) {
+			    	if (message.data.indexOf('ERR:') === 0) {
 			    		ErrorSrvc.showError(message.data, 'User Error');
 			    	}
 			    	else if (message.data.indexOf(':MID:') >= 0) {
 			    		if (!WebsocketSrvc.syncMessage(message.data)) {
-			    			$rootScope.$broadcast('tgc-ws-message', message);
+			    			$rootScope.$broadcast('gws-ws-message', message);
 			    		}
 			    	} else {
-		    			$rootScope.$broadcast('tgc-ws-message', message);
+		    			$rootScope.$broadcast('gws-ws-message', message);
 			    	}
 			    };
 			}
@@ -57,6 +53,26 @@ TGC.service('WebsocketSrvc', function($rootScope, $q, $injector, ConstSrvc, Erro
 		});
 	};
 
+	WebsocketSrvc.disconnect = function(event) {
+		console.log('WebsocketSrvc.disconnect()');
+		if (WebsocketSrvc.SOCKET != null) {
+			WebsocketSrvc.SOCKET.close();
+			WebsocketSrvc.SOCKET = null;
+			WebsocketSrvc.NEXT_MID = 1000000;
+			WebsocketSrvc.SYNC_MSGS = {};
+			if (event) {
+				$rootScope.$broadcast('gws-ws-disconnect');
+			}
+		}
+	};
+	
+	WebsocketSrvc.connected = function() {
+		return WebsocketSrvc.SOCKET ? true : false;
+	};
+
+	////////////////////////
+	// Sync Protocol part //
+	////////////////////////
 	WebsocketSrvc.nextMid = function() {
 		return sprintf('%7d', WebsocketSrvc.NEXT_MID++);
 	};
@@ -72,11 +88,15 @@ TGC.service('WebsocketSrvc', function($rootScope, $q, $injector, ConstSrvc, Erro
 		
 		if (WebsocketSrvc.SYNC_MSGS[mid]) {
 			WebsocketSrvc.SYNC_MSGS[mid].resolve(payload);
+			delete WebsocketSrvc.SYNC_MSGS(mid);
 		}
 		
 		return true;
 	};
 	
+	/////////////////////////////
+	// Send Queue on reconnect //
+	/////////////////////////////
 	WebsocketSrvc.startQueue = function() {
 		console.log('WebsocketSrvc.startQueue()');
 		if (WebsocketSrvc.QUEUE_INTERVAL === null) {
@@ -99,54 +119,29 @@ TGC.service('WebsocketSrvc', function($rootScope, $q, $injector, ConstSrvc, Erro
 		}
 	};
 	
-
-	WebsocketSrvc.disconnect = function() {
-		console.log('WebsocketSrvc.disconnect()');
-		if (WebsocketSrvc.SOCKET != null) {
-			WebsocketSrvc.SOCKET.close();
-			WebsocketSrvc.SOCKET = null;
-			WebsocketSrvc.NEXT_MID = 1000000;
-			WebsocketSrvc.SYNC_MSGS = {};
-		}
-	};
-	
-	WebsocketSrvc.connected = function() {
-		return WebsocketSrvc.SOCKET ? true : false;
-	};
+	//////////
+	// Send //
+	//////////
 
 	WebsocketSrvc.sendJSONCommand = function(command, object, async=true) {
-//		console.log('WebsocketSrvc.sendJSONCommand()', command, object);
 		return WebsocketSrvc.sendCommand(command, JSON.stringify(object), async);
 	};
 	
 	WebsocketSrvc.sendCommand = function(command, payload, async=true) {
-		
-		var PlayerSrvc = WebsocketSrvc.getPlayerSrvc();
-//		console.log('WebsocketSrvc.sendCommand()', command, payload);
 		var d = $q.defer();
-		if (!PlayerSrvc.OWN) {
-			d.reject();
-		}
-		else if (!WebsocketSrvc.connected()) {
+		if (!WebsocketSrvc.connected()) {
 //			WebsocketSrvc.QUEUE.push(messageText);
 			d.reject();
 		}
 		else {
-
 			if (!async) {
 				var mid = WebsocketSrvc.NEXT_MID++;
 				WebsocketSrvc.SYNC_MSGS[mid] = d;
 				payload = sprintf('MID:%s:%s', mid, payload);
 			}
 			
-			var messageText = PlayerSrvc.OWN.secret()+":"+command+":"+payload;
+			var messageText = GWF_USER.secret()+":"+command+":"+payload;
 			
-//			if (!async) {
-//				var mid = WebsocketSrvc.NEXT_MID++;
-//				WebsocketSrvc.SYNC_MSGS[mid].push(d);
-//				messageText = sprintf('MID:%s:%s', mid, messageText);
-//			}
-
 			WebsocketSrvc.send(messageText);
 			
 			if (async) {

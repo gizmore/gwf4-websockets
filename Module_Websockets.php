@@ -21,11 +21,22 @@ final class Module_Websockets extends GWF_Module
 		$this->onLoadLanguage();
 		
 		GWF_Website::addJavascriptInline($this->configScript());
+
+		$this->addJavascript('connect-bar.js');
 	}
 	
 	private function configScript()
 	{
 		return sprintf('GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_url = "%s"; ', $this->cfgWebsocketURL(), $this->cfgWebsocketTLSURL());
+	}
+	
+	public function sidebarContent($bar)
+	{
+		if ($user = GWF_Session::getUser()) {
+			if ($bar === 'left') {
+				return $this->template('connect-bar.php');
+			}
+		}
 	}
 	
 }

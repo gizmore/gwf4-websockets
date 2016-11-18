@@ -1,6 +1,6 @@
 'use strict';
-var TGC = angular.module('tgc');
-TGC.controller('StatsCtrl', function($rootScope, $scope, CommandSrvc, RequestSrvc) {
+angular.module('gwf4').
+controller('StatsCtrl', function($scope, CommandSrvc, WebsocketSrvc) {
 
 	$scope.data = {
 		stats: {
@@ -13,7 +13,11 @@ TGC.controller('StatsCtrl', function($rootScope, $scope, CommandSrvc, RequestSrv
 	
 	$scope.init = function() {
 		CommandSrvc.stats = function($scope) {
-			
+			WebsocketSrvc.sendCommand('stats');
+		};
+		CommandSrvc.STATS = function($scope, payload) {
+			console.log('CommandSrvc.STATS()', payload);
+			$scope.data.stats = JSON.parse(payload);
 		};
 	};
 
