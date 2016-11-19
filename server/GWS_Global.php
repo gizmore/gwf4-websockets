@@ -92,7 +92,7 @@ final class GWS_Global
 	
 	public static function getInterfaceConnection(GWF_User $user)
 	{
-		return isset(self::$CONNECTIONS[$user->getName()]) ? self::$CONNECTIONS[$user] : false;
+		return isset(self::$CONNECTIONS[$user->getName()]) ? self::$CONNECTIONS[$user->getName()] : false;
 	}
 	
 }

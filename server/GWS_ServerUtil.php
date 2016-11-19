@@ -39,7 +39,7 @@ final class GWS_ServerUtil
 	{
 		foreach (GWS_Global::$USERS as $name => $user)
 		{
-			if ($user->getInterfaceConnection() === $conn) {
+			if (GWS_Global::getInterfaceConnection($user) === $conn) {
 				return $user;
 			}
 		}

@@ -44,7 +44,7 @@ final class GWS_Server implements MessageComponentInterface
 	public function onClose(ConnectionInterface $conn) {
 		GWF_Log::logCron(sprintf("GWS_Server::onClose()"));
 		if ($user = GWS_ServerUtil::getUserForConnection($conn)) {
-			GWS_Commands::disconnect($user);
+			$this->handler->disconnect($user);
 		}
 	}
 	
