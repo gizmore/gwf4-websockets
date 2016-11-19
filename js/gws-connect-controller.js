@@ -28,9 +28,10 @@ controller('ConnectCtrl', function($scope, WebsocketSrvc, ErrorSrvc, CommandSrvc
 
 	$scope.$on('gws-ws-close', function($event) {
 		console.log('ConnectCtrl.$on-gws-ws-close()', $event);
-		WebsocketSrvc.disconnect(false);
 		$scope.data.state.bool = false;
 		$scope.data.state.text = 'down';
+		WebsocketSrvc.disconnect(false);
+		$scope.$apply();
 	});
 	
 	$scope.$on('gws-ws-message', function($event, message) {

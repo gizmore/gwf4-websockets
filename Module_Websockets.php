@@ -22,10 +22,10 @@ final class Module_Websockets extends GWF_Module
 		
 		GWF_Website::addJavascriptInline($this->configScript());
 
-		$this->addJavascript('CommandSrvc.js');
-		$this->addJavascript('ConnectCtrl.js');
-		$this->addJavascript('StatsCtrl.js');
-		$this->addJavascript('WebsocketSrvc.js');
+		$this->addJavascript('gws-command-service.js');
+		$this->addJavascript('gws-connect-controller.js');
+		$this->addJavascript('gws-stats-controller.js');
+		$this->addJavascript('gws-websocket-service.js');
 	}
 	
 	private function configScript()
