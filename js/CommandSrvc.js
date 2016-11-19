@@ -1,8 +1,8 @@
 'use strict';
 angular.module('gwf4').
-service('GWSCommandSrvc', function($rootScope, $injector, ErrorSrvc, WebsocketSrvc) {
+service('CommandSrvc', function($rootScope, $injector, ErrorSrvc, WebsocketSrvc) {
 	
-	var GWSCommandSrvc = this;
+	var CommandSrvc = this;
 	
 	/////////////////////
 	// Client commands //

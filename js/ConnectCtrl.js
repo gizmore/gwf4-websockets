@@ -1,6 +1,6 @@
 'use strict';
 angular.module('gwf4').
-controller('ConnectCtrl', function($scope, WebsocketSrvc, ErrorSrvc) {
+controller('ConnectCtrl', function($scope, WebsocketSrvc, ErrorSrvc, CommandSrvc) {
 
 	$scope.data = {
 		state: {
@@ -9,11 +9,12 @@ controller('ConnectCtrl', function($scope, WebsocketSrvc, ErrorSrvc) {
 		}	
 	};
 	
-	$scope.connect = function($event) {
-		console.log('ConnectCtrl.connect()', $event);
-		WebsocketSrvc.connect().then(function(){
+	$scope.connect = function() {
+		console.log('ConnectCtrl.connect()');
+		WebsocketSrvc.connect(GWF_CONFIG.ws_url).then(function(){
 			$scope.data.bool = true;
 			$scope.data.text = 'established';
+			CommandSrvc.ping();
 		});
 	}
 

@@ -6,22 +6,24 @@
  */
 final class GWS_ServerUtil
 {
+	public static $HANDLER;
+	
 	public static function getUserForMessage($msg)
 	{
 		$parts = explode(':', $msg, 5);
 		if (count($parts) !== 5) {
 			return 'ERR_FORMAT';
 		}
-		if (!GWS_Commands::validCommand($parts[3])) {
+		if (!self::$HANDLER->validCommand($parts[3])) {
 			return 'ERR_COMMAND';
 		}
 		if (false === ($user = (GWS_Global::getOrLoadUser($parts[1])))) {
-			return "ERR_PLAYER_NAME";
+			return "ERR_USER_NAME";
 		}
-		if ($user->getVar('p_uid') !== $parts[0]) {
+		if ($user->getVar('user_id') !== $parts[0]) {
 			return "ERR_ID_MISMATCH";
 		}
-		if (substr($user->getVar('user_password'), GWS_Const::SECRET_CUT) !== $parts[2]) {
+		if (substr($user->getVar('user_password'), 13, 8) !== $parts[2]) {
 			return "ERR_SECRET";
 		}
 		GWS_Global::addUser($user);

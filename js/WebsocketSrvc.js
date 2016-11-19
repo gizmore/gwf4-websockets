@@ -16,41 +16,41 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 	////////////////
 	// Connection //
 	////////////////
-	WebsocketSrvc.connect = function() {
-		return $q(function(resolve, reject){
-			console.log('WebsocketSrvc.connect()', window.gwsConfig);
-			if (WebsocketSrvc.SOCKET == null) {
-				var ws = WebsocketSrvc.SOCKET = new WebSocket(ConstSrvc.websocketURL());
-				ws.onopen = function() {
-					WebsocketSrvc.startQueue();
-			    	resolve();
-			    	$rootScope.$broadcast('gws-ws-open');
-				};
-			    ws.onclose = function() {
-			    	$rootScope.$broadcast('gws-ws-close');
-			    	WebsocketSrvc.disconnect(false);
-			    };
-			    ws.onerror = function(error) {
-			    	WebsocketSrvc.disconnect(false);
-					reject(error);
-			    };
-			    ws.onmessage = function(message) {
-			    	if (message.data.indexOf('ERR:') === 0) {
-			    		ErrorSrvc.showError(message.data, 'User Error');
-			    	}
-			    	else if (message.data.indexOf(':MID:') >= 0) {
-			    		if (!WebsocketSrvc.syncMessage(message.data)) {
-			    			$rootScope.$broadcast('gws-ws-message', message);
-			    		}
-			    	} else {
+	WebsocketSrvc.connect = function(url) {
+		console.log('WebsocketSrvc.connect()', window.gwsConfig);
+		var defer = $q.defer();
+		if (WebsocketSrvc.SOCKET == null) {
+			var ws = WebsocketSrvc.SOCKET = new WebSocket(url);
+			ws.onopen = function() {
+				WebsocketSrvc.startQueue();
+		    	defer.resolve();
+		    	$rootScope.$broadcast('gws-ws-open');
+			};
+		    ws.onclose = function() {
+		    	$rootScope.$broadcast('gws-ws-close');
+		    	WebsocketSrvc.disconnect(false);
+		    };
+		    ws.onerror = function(error) {
+		    	WebsocketSrvc.disconnect(false);
+				defer.reject(error);
+		    };
+		    ws.onmessage = function(message) {
+		    	if (message.data.indexOf('ERR:') === 0) {
+		    		ErrorSrvc.showError(message.data, 'User Error');
+		    	}
+		    	else if (message.data.indexOf(':MID:') >= 0) {
+		    		if (!WebsocketSrvc.syncMessage(message.data)) {
 		    			$rootScope.$broadcast('gws-ws-message', message);
-			    	}
-			    };
-			}
-			else {
-				reject();
-			}
-		});
+		    		}
+		    	} else {
+	    			$rootScope.$broadcast('gws-ws-message', message);
+		    	}
+		    };
+		}
+		else {
+			defer.reject();
+		}
+		return defer.promise;
 	};
 
 	WebsocketSrvc.disconnect = function(event) {

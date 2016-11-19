@@ -25,10 +25,6 @@ class GWS_Commands
 	}
 	
 	public function disconnect(GWF_User $user) {
-		$payload = self::payload($user->getName());
-		$user->forNearMe(function($p, $payload) {
-			$p->sendCommand('QUIT', $payload);
-		}, $payload);
 		GWS_Global::removeUser($user);
 	}
 	
@@ -43,7 +39,7 @@ class GWS_Commands
 	public function cmd_ping(GWF_User $user, $payload, $mid)
 	{
 		$clientVersion = $payload;
-		$user->sendCommand('PONG', self::payload('1.0.0', $mid));
+		GWS_Global::sendCommand($user, 'PONG', self::payload('1.0.0', $mid));
 	}
 	
 	public function cmd_stats(GWF_User $user, $payload, $mid)
@@ -54,19 +50,19 @@ class GWS_Commands
 			'peak' => memory_get_peak_usage(true),
 			'cpu' => 1.00,
 		);
-		$user->sendJSONCommand('STATS', $stats);
+		GWS_Global::sendJSONCommand($user, 'STATS', $stats);
 	}
 	
 	public function cmd_user(GWF_User $user, $payload, $mid)
 	{
 		if (!($p = GWS_ServerUtil::getUserForName($payload)))
 		{
-			return $user->sendError('ERR_UNKNOWN_PLAYER');
+			return GWS_Global::sendError($user, 'ERR_UNKNOWN_PLAYER');
 		}
 		$payload = json_encode(array(
 			'player' => array_merge(array('name' => $p->getName(), 'hash' => $p->getStatsHash()), $p->playerDTO()),
 		));
-		$user->sendCommand('PLAYER', self::payload($payload, $mid));
+		GWS_Global::sendCommand($user, 'USER', self::payload($payload, $mid));
 	}
 	
 }

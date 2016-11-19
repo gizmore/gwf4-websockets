@@ -8,6 +8,7 @@ use Ratchet\WebSocket\WsServer;
 final class GWS_Server implements MessageComponentInterface
 {
 	private $server;
+	private $handler;
 	
 	public function mainloop()
 	{
@@ -29,16 +30,14 @@ final class GWS_Server implements MessageComponentInterface
 			return;
 		}
 		$user = GWS_ServerUtil::getUserForMessage($msg);
-		if ($user instanceof GWS_User) {
-			if (!$user->isConnected()) {
-				$user->setConnectionInterface($from);
-				$user->rehash();
+		if ($user instanceof GWF_User) {
+			if (!GWS_Global::isConnected($user)) {
+				GWS_Global::setConnectionInterface($user, $from);
 			}
-			GWS_Commands::execute($user, $msg);
+			$this->handler->execute($user, $msg);
 		}
 		else {
-			echo $user;
-			$from->send('ERR:'.$user);
+			$from->send('ERR:ERR_SERVER');
 		}
 	}
 	
@@ -56,9 +55,11 @@ final class GWS_Server implements MessageComponentInterface
 	############
 	### Init ###
 	############
-	public function initGWSServer()
+	public function initGWSServer($handler)
 	{
 		GWF_Log::logMessage("GWS_Server::initTamagochiServer()");
+		GWS_ServerUtil::$HANDLER = $handler;
+		$this->handler = $handler;
 		$this->server = IoServer::factory(new HttpServer(new WsServer($this)), 34543);
 		return true;
 	}

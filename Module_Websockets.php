@@ -22,12 +22,25 @@ final class Module_Websockets extends GWF_Module
 		
 		GWF_Website::addJavascriptInline($this->configScript());
 
-		$this->addJavascript('connect-bar.js');
+		$this->addJavascript('CommandSrvc.js');
+		$this->addJavascript('ConnectCtrl.js');
+		$this->addJavascript('StatsCtrl.js');
+		$this->addJavascript('WebsocketSrvc.js');
 	}
 	
 	private function configScript()
 	{
-		return sprintf('GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_url = "%s"; ', $this->cfgWebsocketURL(), $this->cfgWebsocketTLSURL());
+		return sprintf(' GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_url = "%s"; GWF_CONFIG.wss_secret = "%s";', 
+				$this->cfgWebsocketURL(), $this->cfgWebsocketTLSURL(), $this->websocketSecret());
+	}
+	
+	private function websocketSecret()
+	{
+		$user = GWF_User::getStaticOrGuest();
+		$uid = $user->getID();
+		$name = $user->getName();
+		$secret = substr($user->getVar('user_password'), 13, 8);
+		return "$uid:$name:$secret";
 	}
 	
 	public function sidebarContent($bar)
