@@ -23,4 +23,6 @@ service('CommandSrvc', function($rootScope, $injector, ErrorSrvc, WebsocketSrvc)
 		console.log('CommandSrvc.PONG()', payload);
 		$scope.data.version = payload;
 	};
+	
+	return CommandSrvc;
 });

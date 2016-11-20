@@ -10,10 +10,12 @@ final class Module_Websockets extends GWF_Module
 	public function onLoadLanguage() { return $this->loadLanguage('lang/websockets'); }
 	public function onInstall($dropTable) { require_once 'GWF_InstallWebsockets.php'; return GWF_InstallWebsockets::onInstall($this, $dropTable); }
 	
-	public function cfgWebsocketProcessorPath() { return $this->getModuleVar('ws_processor_path', sprintf('%smodule/Websockets/server/GWS_Commands.php', GWF_PATH)); }
+	public function cfgWebsocketProcessorPath() { return $this->getModuleVar('ws_processor_path', $this->defaultProcessorPath()); }
 	public function cfgWebsocketProcessorClass() { return $this->getModuleVar('ws_processor_class', 'GWS_Commands'); }
 	public function cfgWebsocketURL() { return $this->getModuleVar('ws_url', sprintf('ws://%s:34543', GWF_DOMAIN)); }
 	public function cfgWebsocketTLSURL() { return $this->getModuleVar('wss_url', sprintf('wss://%s:61221', GWF_DOMAIN)); }
+	
+	public function defaultProcessorPath() { return sprintf('%smodule/Websockets/server/GWS_Commands.php', GWF_PATH); }
 	
 	public function onStartup()
 	{

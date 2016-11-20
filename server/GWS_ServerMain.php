@@ -46,6 +46,7 @@ if (false === ($gws = GWF_Module::loadModuleDB("Websockets", true, true, true)))
 
 require_once 'GWS_Global.php';
 require_once 'GWS_ServerUtil.php';
+require_once $gws->defaultProcessorPath();
 require_once $gws->cfgWebsocketProcessorPath();
 require_once 'GWS_Server.php';
 
