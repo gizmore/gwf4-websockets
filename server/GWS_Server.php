@@ -37,7 +37,7 @@ final class GWS_Server implements MessageComponentInterface
 			$this->handler->execute($user, $msg);
 		}
 		else {
-			$from->send('ERR:ERR_SERVER');
+			$from->send('ERR:'.$user);
 		}
 	}
 	
