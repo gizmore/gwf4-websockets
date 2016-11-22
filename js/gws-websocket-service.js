@@ -96,8 +96,10 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 		var payload = parts[3];
 		
 		if (WebsocketSrvc.SYNC_MSGS[mid]) {
-			WebsocketSrvc.SYNC_MSGS[mid].resolve(payload);
-			delete WebsocketSrvc.SYNC_MSGS(mid);
+			if (WebsocketSrvc.SYNC_MSGS[mid]) {
+				WebsocketSrvc.SYNC_MSGS[mid].resolve(payload);
+				WebsocketSrvc.SYNC_MSGS[mid] = undefined;
+			}
 		}
 		
 		return true;
