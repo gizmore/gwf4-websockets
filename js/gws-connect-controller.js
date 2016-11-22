@@ -22,7 +22,6 @@ controller('ConnectCtrl', function($scope, WebsocketSrvc, ErrorSrvc, CommandSrvc
 	$scope.$on('gws-ws-open', function() {
 		$scope.data.state.bool = true;
 		$scope.data.state.text = 'established';
-		CommandSrvc.ping();
 		$scope.$apply();
 	});
 
