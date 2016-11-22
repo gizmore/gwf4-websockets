@@ -168,4 +168,5 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 		WebsocketSrvc.SOCKET.send(messageText);
 	};
 
+	return WebsocketSrvc;
 });
