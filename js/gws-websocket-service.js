@@ -16,6 +16,15 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 	////////////////
 	// Connection //
 	////////////////
+	WebsocketSrvc.withConnection = function(url) {
+		if (WebsocketSrvc.connected()) {
+			var defer = $q.defer();
+			defer.resolve();
+			return defer.promise;
+		}
+		return WebsocketSrvc.connect(url);
+	}
+
 	WebsocketSrvc.connect = function(url) {
 		console.log('WebsocketSrvc.connect()', url);
 		var defer = $q.defer();
@@ -52,7 +61,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 		}
 		return defer.promise;
 	};
-
+	
 	WebsocketSrvc.disconnect = function(event) {
 		console.log('WebsocketSrvc.disconnect()');
 		if (WebsocketSrvc.SOCKET != null) {
