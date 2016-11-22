@@ -9,6 +9,7 @@ final class GWS_Server implements MessageComponentInterface
 {
 	private $server;
 	private $handler;
+	private $allowGuests;
 	
 	public function mainloop()
 	{
@@ -25,18 +26,22 @@ final class GWS_Server implements MessageComponentInterface
 	
 	public function onMessage(ConnectionInterface $from, $msg) {
 // 		GWF_Log::logCron(sprintf("GWS_Server::onMessage(): %s", $msg));
-		if (strlen($msg) > 511) {
+		if (strlen($msg) > 511) 
+		{
 			$from->send('ERR:ERR_MSG_LENGTH_EXCEED:511');
 			return;
 		}
-		$user = GWS_ServerUtil::getUserForMessage($msg);
-		if ($user instanceof GWF_User) {
-			if (!GWS_Global::isConnected($user)) {
+		$user = GWS_ServerUtil::getUserForMessage($msg, $this->allowGuests);
+		if ($user instanceof GWF_User)
+		{
+			if (!GWS_Global::isConnected($user))
+			{
 				GWS_Global::setConnectionInterface($user, $from);
 			}
 			$this->handler->execute($user, $msg);
 		}
-		else {
+		else
+		{
 			$from->send('ERR:'.$user);
 		}
 	}
@@ -55,11 +60,12 @@ final class GWS_Server implements MessageComponentInterface
 	############
 	### Init ###
 	############
-	public function initGWSServer($handler)
+	public function initGWSServer($handler, $allowGuests)
 	{
 		GWF_Log::logMessage("GWS_Server::initTamagochiServer()");
 		GWS_ServerUtil::$HANDLER = $handler;
 		$this->handler = $handler;
+		$this->allowGuests = $allowGuests;
 		$this->server = IoServer::factory(new HttpServer(new WsServer($this)), 34543);
 		return true;
 	}

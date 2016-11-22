@@ -24,21 +24,43 @@ final class GWS_Global
 		return isset(self::$USERS[$name]) ? self::$USERS[$name] : false;
 	}
 	
-	public static function getOrLoadUser($name)
+	public static function getOrLoadUser($name, $allowGuests)
 	{
-		if (false !== ($user = self::getUser($name))) {
+		if (false !== ($user = self::getUser($name)))
+		{
 			return $user;
 		}
-		return self::loadUser($name);
+		return self::loadUser($name, $allowGuests);
 	}
 	
 
 	###############
 	### Private ###
 	###############
-	private static function loadUser($name)
+	private static function loadUser($name, $allowGuests)
 	{
-		return GWF_User::getByName($name);
+		$letter = $name[0];
+		if ( (($letter >= '0') && ($letter <= '9')) && ($allowGuests) )
+		{
+			return self::getUserBySessID($name);
+		}
+		else
+		{
+			return GWF_User::getByName($name);
+		}
+	}
+	
+	private static $GUESTS = array();
+	private static function getUserBySessID($number)
+	{
+		if (!isset(self::$GUESTS[$number]))
+		{
+			$user = GWF_Guest::getGuest();
+			$user->setVar('user_name', $number);
+			$user->setVar('user_password', sha1(GWF_SECRET_SALT.$number.GWF_SECRET_SALT));
+			self::$GUESTS[$number] = $user;
+		}
+		return self::$GUESTS[$number];
 	}
 	
 	##################
@@ -70,7 +92,8 @@ final class GWS_Global
 	
 	public static function disconnect(GWF_User $user, $reason="NO_REASON")
 	{
-		if (self::isConnected($user)) {
+		if (self::isConnected($user))
+		{
 			self::send($user, "CLOSE:".$reason);
 			unset(self::$CONNECTIONS[$user->getName()]);
 		}

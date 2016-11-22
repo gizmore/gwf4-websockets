@@ -8,7 +8,7 @@ final class GWS_ServerUtil
 {
 	public static $HANDLER;
 	
-	public static function getUserForMessage($msg)
+	public static function getUserForMessage($msg, $allowGuests)
 	{
 		$parts = explode(':', $msg, 5);
 		if (count($parts) !== 5) {
@@ -17,17 +17,22 @@ final class GWS_ServerUtil
 		if (!self::$HANDLER->validCommand($parts[3])) {
 			return 'ERR_COMMAND';
 		}
-		if (false === ($user = (GWS_Global::getOrLoadUser($parts[1])))) {
-			return "ERR_USER_NAME";
+		if (false === ($user = (GWS_Global::getOrLoadUser($parts[1], $allowGuests)))) {
+			return "ERR_USER";
 		}
 		if ($user->getVar('user_id') !== $parts[0]) {
 			return "ERR_ID_MISMATCH";
 		}
-		if (substr($user->getVar('user_password'), 13, 8) !== $parts[2]) {
+		if (self::secretForUser($user) !== $parts[2]) {
 			return "ERR_SECRET";
 		}
 		GWS_Global::addUser($user);
 		return $user;
+	}
+	
+	public static function secretForUser(GWF_User $user)
+	{
+		return substr($user->getVar('user_password'), 13, 8);
 	}
 	
 	public static function getUserForName($name)
