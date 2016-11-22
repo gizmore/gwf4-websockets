@@ -17,7 +17,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 	// Connection //
 	////////////////
 	WebsocketSrvc.connect = function(url) {
-		console.log('WebsocketSrvc.connect()', window.gwsConfig);
+		console.log('WebsocketSrvc.connect()', url);
 		var defer = $q.defer();
 		if (WebsocketSrvc.SOCKET == null) {
 			var ws = WebsocketSrvc.SOCKET = new WebSocket(url);
