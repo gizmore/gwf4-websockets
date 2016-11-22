@@ -1,6 +1,6 @@
 'use strict';
 angular.module('gwf4').
-service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
+service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc) {
 	
 	var WebsocketSrvc = this;
 	
@@ -49,10 +49,10 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 		    	}
 		    	else if (message.data.indexOf(':MID:') >= 0) {
 		    		if (!WebsocketSrvc.syncMessage(message.data)) {
-		    			$rootScope.$broadcast('gws-ws-message', message);
+		    			WebsocketSrvc.processMessage(mesage.data);
 		    		}
 		    	} else {
-	    			$rootScope.$broadcast('gws-ws-message', message);
+	    			WebsocketSrvc.processMessage(message.data);
 		    	}
 		    };
 		}
@@ -62,6 +62,17 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc) {
 		return defer.promise;
 	};
 	
+	WebsocketSrvc.processMessage = function(messageText) {
+		console.log('ConnectCtrl.processMessage()', messageText);
+		var command = messageText.substrUntil(':');
+		if (CommandSrvc[command]) {
+			CommandSrvc[command](messageText.substrFrom(':'));
+		}
+		else {
+	    	$rootScope.$broadcast('gws-ws-message', messageText);
+		}
+	};
+
 	WebsocketSrvc.disconnect = function(event) {
 		console.log('WebsocketSrvc.disconnect()');
 		if (WebsocketSrvc.SOCKET != null) {

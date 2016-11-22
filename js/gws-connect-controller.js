@@ -33,20 +33,5 @@ controller('ConnectCtrl', function($scope, WebsocketSrvc, ErrorSrvc, CommandSrvc
 		WebsocketSrvc.disconnect(false);
 		$scope.$apply();
 	});
-	
-	$scope.$on('gws-ws-message', function($event, message) {
-		console.log('ConnectCtrl.$on-gws-message()', message);
-		$scope.processMessage(message.data);
-	});
-	
-	$scope.processMessage = function(messageText) {
-		console.log('ConnectCtrl.processMessage()', messageText);
-		var command = messageText.substrUntil(':');
-		if (CommandSrvc[command])
-		{
-			CommandSrvc[command]($scope, messageText.substrFrom(':'));
-			$scope.$apply();
-		}
-	};
 
 });
