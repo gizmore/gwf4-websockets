@@ -22,12 +22,13 @@ final class Module_Websockets extends GWF_Module
 	{
 		self::$instance = $this;
 		$this->onLoadLanguage();
-	
-		GWF_Website::addJavascriptInline($this->configScript());
-		$this->addJavascript('gws-command-service.js');
-		$this->addJavascript('gws-connect-controller.js');
-		$this->addJavascript('gws-stats-controller.js');
-		$this->addJavascript('gws-websocket-service.js');
+		if (GWF_Session::hasSession()) {
+			GWF_Website::addJavascriptInline($this->configScript());
+			$this->addJavascript('gws-command-service.js');
+			$this->addJavascript('gws-connect-controller.js');
+			$this->addJavascript('gws-stats-controller.js');
+			$this->addJavascript('gws-websocket-service.js');
+		}
 	}
 	
 	private function configScript()
