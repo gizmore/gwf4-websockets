@@ -41,9 +41,9 @@ final class Module_Websockets extends GWF_Module
 	private function websocketSecret()
 	{
 		$user = GWF_User::getStaticOrGuest();
-		$uid = $user->getID();
-		$name = $user->getID() > 0 ? $user->getName() : GWF_Session::getSessSID();
-		$secret = $user->getID() > 0 ? $user->getVar('user_password') : sha1(GWF_SECRET_SALT.GWF_Session::getSessSID().GWF_SECRET_SALT);
+		$uid = $user->isGuest() ? $user->getGuestID() : $user->getID();
+		$name = $user->getName();
+		$secret = $user->isGuest() ? sha1(GWF_SECRET_SALT.GWF_Session::getSessSID().GWF_SECRET_SALT) : $user->getVar('user_password');
 		$secret = substr($secret, 13, 8);
 		return "$uid:$name:$secret";
 	}

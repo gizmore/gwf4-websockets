@@ -40,9 +40,13 @@ final class GWS_Global
 	private static function loadUser($name, $allowGuests)
 	{
 		$letter = $name[0];
-		if ( (($letter >= '0') && ($letter <= '9')) && ($allowGuests) )
+		if (($letter >= '0') && ($letter <= '9'))
 		{
-			return self::getUserBySessID($name);
+			if ($allowGuests) {
+				return self::getUserBySessID($name);
+			} else {
+				return false;
+			}
 		}
 		else
 		{
@@ -50,17 +54,16 @@ final class GWS_Global
 		}
 	}
 	
-	private static $GUESTS = array();
 	private static function getUserBySessID($number)
 	{
-		if (!isset(self::$GUESTS[$number]))
+		$number = (string)$number;
+		if (!isset(self::$USERS[$number]))
 		{
-			$user = GWF_Guest::getGuest();
-			$user->setVar('user_name', $number);
+			$user = GWF_Guest::getGuest($number);
 			$user->setVar('user_password', sha1(GWF_SECRET_SALT.$number.GWF_SECRET_SALT));
-			self::$GUESTS[$number] = $user;
+			self::$USERS[$number] = $user;
 		}
-		return self::$GUESTS[$number];
+		return self::$USERS[$number];
 	}
 	
 	##################

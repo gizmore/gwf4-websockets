@@ -10,6 +10,7 @@ final class GWS_ServerUtil
 	
 	public static function getUserForMessage($msg, $allowGuests)
 	{
+#		echo "$msg\n";
 		$parts = explode(':', $msg, 5);
 		if (count($parts) !== 5) {
 			return 'ERR_FORMAT';
@@ -18,9 +19,10 @@ final class GWS_ServerUtil
 			return 'ERR_COMMAND';
 		}
 		if (false === ($user = (GWS_Global::getOrLoadUser($parts[1], $allowGuests)))) {
-			return "ERR_USER";
+			return "ERR_COMMAND_USER";
 		}
-		if ($user->getVar('user_id') !== $parts[0]) {
+		$testID = $user->isGuest() ? $user->getGuestID() : $user->getID();
+		if ($testID !== $parts[0]) {
 			return "ERR_ID_MISMATCH";
 		}
 		if (self::secretForUser($user) !== $parts[2]) {
