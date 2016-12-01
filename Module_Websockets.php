@@ -1,16 +1,22 @@
 <?php
+/**
+ * Websocket server module.
+ * @author gizmore
+ * @license MIT
+ */
 final class Module_Websockets extends GWF_Module
 {
 	private static $instance;
 	public static function instance() { return self::$instance; }
 	
-	public function getVersion() { return 1.04; }
+	public function getVersion() { return 4.01; }
 	public function getDefaultPriority() { return 20; }
 	public function getDefaultAutoLoad() { return true; }
 	public function onLoadLanguage() { return $this->loadLanguage('lang/websockets'); }
 	public function onInstall($dropTable) { require_once 'GWF_InstallWebsockets.php'; return GWF_InstallWebsockets::onInstall($this, $dropTable); }
 	
 	public function cfgAllowGuestConnections() { return $this->getModuleVarBool('ws_guest_connections', '1'); }
+	public function cfgTimerInterval() { return $this->getModuleVarFloat('ws_timer_interval', '0'); }
 	public function cfgWebsocketProcessorPath() { return $this->getModuleVar('ws_processor_path', $this->defaultProcessorPath()); }
 	public function cfgWebsocketProcessorClass() { return $this->getModuleVar('ws_processor_class', 'GWS_Commands'); }
 	public function cfgWebsocketURL() { return $this->getModuleVar('ws_url', sprintf('ws://%s:34543', GWF_DOMAIN)); }
@@ -22,7 +28,8 @@ final class Module_Websockets extends GWF_Module
 	{
 		self::$instance = $this;
 		$this->onLoadLanguage();
-		if (GWF_Session::hasSession()) {
+		if (GWF_Session::hasSession())
+		{
 			GWF_Website::addJavascriptInline($this->configScript());
 			$this->addJavascript('gws-command-service.js');
 			$this->addJavascript('gws-connect-controller.js');

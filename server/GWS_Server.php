@@ -11,10 +11,19 @@ final class GWS_Server implements MessageComponentInterface
 	private $handler;
 	private $allowGuests;
 	
-	public function mainloop()
+	public function mainloop($timerInterval=0)
 	{
 		GWF_Log::logMessage("GWS_Server::mainloop()");
+		if ($timerInterval > 0)
+		{
+			$this->server->loop->addPeriodicTimer($timerInterval, array($this, 'mainTimer'));
+		}
 		$this->server->run();
+	}
+	
+	public function mainTimer()
+	{
+		$this->handler->timer();
 	}
 	
 	###############

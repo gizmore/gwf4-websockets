@@ -54,4 +54,4 @@ $processor = $gws->cfgWebsocketProcessorClass();
 
 $server = new GWS_Server();
 $server->initGWSServer(new $processor(), $gws->cfgAllowGuestConnections());
-$server->mainloop();
+$server->mainloop($gws->cfgTimerInterval());

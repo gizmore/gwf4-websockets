@@ -33,6 +33,22 @@ class GWS_Commands
 		return $mid === self::DEFAULT_MID ? $payload : sprintf('MID:%7s:%s', $mid, $payload);
 	}
 	
+	############
+	### Init ###
+	############
+	public function init()
+	{
+		
+	}
+	
+	#############
+	### Timer ###
+	#############
+	public function timer()
+	{
+	
+	}
+	
 	################
 	### Commands ###
 	################
