@@ -76,6 +76,7 @@ final class GWS_Server implements MessageComponentInterface
 		$this->handler = $handler;
 		$this->allowGuests = $allowGuests;
 		$this->server = IoServer::factory(new HttpServer(new WsServer($this)), 34543);
+		$this->handler->init();
 		return true;
 	}
 }
