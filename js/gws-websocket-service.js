@@ -8,6 +8,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc) {
 	WebsocketSrvc.SYNC_MSGS = {};
 	
 	WebsocketSrvc.SOCKET = null;
+	WebsocketSrvc.CONNECTED = false;
 	
 //	WebsocketSrvc.QUEUE = [];
 //	WebsocketSrvc.QUEUE_INTERVAL = null;
@@ -33,14 +34,17 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc) {
 			ws.onopen = function() {
 				WebsocketSrvc.startQueue();
 		    	defer.resolve();
+		    	WebsocketSrvc.CONNECTED = true;
 		    	$rootScope.$broadcast('gws-ws-open');
 			};
 		    ws.onclose = function() {
-		    	$rootScope.$broadcast('gws-ws-close');
-		    	WebsocketSrvc.disconnect(false);
+		    	WebsocketSrvc.disconnect(true);
+		    	if (WebsocketSrvc.CONNECTED) {
+		    		$rootScope.$broadcast('gws-ws-close');
+		    	}
 		    };
 		    ws.onerror = function(error) {
-		    	WebsocketSrvc.disconnect(false);
+		    	WebsocketSrvc.disconnect(true);
 				defer.reject(error);
 		    };
 		    ws.onmessage = function(message) {
@@ -78,6 +82,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc) {
 		if (WebsocketSrvc.SOCKET != null) {
 			WebsocketSrvc.SOCKET.close();
 			WebsocketSrvc.SOCKET = null;
+	    	WebsocketSrvc.CONNECTED = false;
 			WebsocketSrvc.NEXT_MID = 1000000;
 			WebsocketSrvc.SYNC_MSGS = {};
 			if (event) {
