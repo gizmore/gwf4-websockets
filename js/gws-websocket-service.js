@@ -40,6 +40,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc) {
 		    ws.onclose = function() {
 		    	WebsocketSrvc.disconnect(true);
 		    	if (WebsocketSrvc.CONNECTED) {
+			    	WebsocketSrvc.CONNECTED = false;
 		    		$rootScope.$broadcast('gws-ws-close');
 		    	}
 		    };
@@ -82,7 +83,6 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc) {
 		if (WebsocketSrvc.SOCKET != null) {
 			WebsocketSrvc.SOCKET.close();
 			WebsocketSrvc.SOCKET = null;
-	    	WebsocketSrvc.CONNECTED = false;
 			WebsocketSrvc.NEXT_MID = 1000000;
 			WebsocketSrvc.SYNC_MSGS = {};
 			if (event) {
