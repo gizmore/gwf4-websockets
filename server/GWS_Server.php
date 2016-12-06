@@ -69,13 +69,13 @@ final class GWS_Server implements MessageComponentInterface
 	############
 	### Init ###
 	############
-	public function initGWSServer($handler, $allowGuests)
+	public function initGWSServer($handler, $port, $allowGuests)
 	{
 		GWF_Log::logMessage("GWS_Server::initTamagochiServer()");
 		GWS_ServerUtil::$HANDLER = $handler;
 		$this->handler = $handler;
 		$this->allowGuests = $allowGuests;
-		$this->server = IoServer::factory(new HttpServer(new WsServer($this)), 34543);
+		$this->server = IoServer::factory(new HttpServer(new WsServer($this)), $port);
 		$this->handler->init();
 		return true;
 	}
