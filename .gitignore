@@ -1,4 +1,4 @@
-/pidfile
+/bin/pidfile
 /composer.phar
 /vendor
 /composer.json
