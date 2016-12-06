@@ -41,8 +41,8 @@ final class Module_Websockets extends GWF_Module
 	private function configScript()
 	{
 		return php_sapi_name() === 'cli' ? '' :
-			sprintf(' GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_url = "%s"; GWF_CONFIG.wss_secret = "%s";', 
-				$this->cfgWebsocketURL(), $this->cfgWebsocketTLSURL(), $this->websocketSecret());
+			sprintf(' GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_secret = "%s";', 
+				$this->cfgWebsocketURL(), $this->websocketSecret());
 	}
 	
 	private function websocketSecret()
