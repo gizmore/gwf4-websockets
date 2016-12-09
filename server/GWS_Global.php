@@ -121,4 +121,12 @@ final class GWS_Global
 		return isset(self::$CONNECTIONS[$user->getName()]) ? self::$CONNECTIONS[$user->getName()] : false;
 	}
 	
+	public static function getIPForUser(GWF_User $user)
+	{
+		if ($connection = self::getInterfaceConnection($user))
+		{
+			return GWF_IP6::getIP(GWF_IP_QUICK, $connection->getRemoteAddress());
+		}
+		return false;
+	}
 }

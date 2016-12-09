@@ -23,7 +23,29 @@ as apache user do
     php -r "unlink('composer-setup.php');"
     php composer.phar require cboden/ratchet
     
-  
+
+### Patch Ratchet
+
+Sadly, ratchet needs a patch in 2 files, so we can get the remote address of clients.
+
+
+Add to Ratchet/AbstractConnectionDecorator.php Line 26:
+    
+    public function getRemoteAddress()
+    {
+        return $this->wrappedConn->getConnection()->getRemoteAddress();
+    }
+    
+
+Add to Ratchet/Server/IoConnection.php Line 42:
+
+    public function getConnection()
+    {
+        return $this->conn;
+    }
+
+
+
 ### nginx tls websocket server config
 
     upstream websocketserver {
