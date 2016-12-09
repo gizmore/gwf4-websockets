@@ -1,6 +1,6 @@
 'use strict';
 angular.module('gwf4').
-service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc) {
+service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, LoadingSrvc) {
 	
 	var WebsocketSrvc = this;
 	
@@ -30,14 +30,17 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc) {
 		console.log('WebsocketSrvc.connect()', url);
 		var defer = $q.defer();
 		if (WebsocketSrvc.SOCKET == null) {
+			LoadingSrvc.addTask('wsconnect');
 			var ws = WebsocketSrvc.SOCKET = new WebSocket(url);
 			ws.onopen = function() {
+				LoadingSrvc.stopTask('wsconnect');
 				WebsocketSrvc.startQueue();
 		    	defer.resolve();
 		    	WebsocketSrvc.CONNECTED = true;
 		    	$rootScope.$broadcast('gws-ws-open');
 			};
 		    ws.onclose = function() {
+				LoadingSrvc.stopTask('wsconnect');
 		    	WebsocketSrvc.disconnect(true);
 		    	if (WebsocketSrvc.CONNECTED) {
 			    	WebsocketSrvc.CONNECTED = false;
