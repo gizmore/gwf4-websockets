@@ -48,11 +48,18 @@ final class Module_Websockets extends GWF_Module
 	private function websocketSecret()
 	{
 		$user = GWF_User::getStaticOrGuest();
-		$uid = $user->isGuest() ? $user->getGuestID() : $user->getID();
-		$name = $user->getName();
-		$secret = $user->isGuest() ? sha1(GWF_SECRET_SALT.GWF_Session::getSessSID().GWF_SECRET_SALT) : $user->getVar('user_password');
-		$secret = substr($secret, 13, 8);
-		return "$uid:$name:$secret";
+		if ($user->persistentGuest() && $user->isUser())
+		{
+			$uid = $user->isGuest() ? $user->getGuestID() : $user->getID();
+			$name = $user->getName();
+			$secret = $user->isGuest() ? sha1(GWF_SECRET_SALT.GWF_Session::getSessSID().GWF_SECRET_SALT) : $user->getVar('user_password');
+			$secret = substr($secret, 13, 8);
+			return "$uid:$name:$secret";
+		}
+		else
+		{
+			return '0:0:';
+		}
 	}
 	
 	public function sidebarContent($bar)
