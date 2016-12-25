@@ -18,6 +18,8 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	// Connection //
 	////////////////
 	WebsocketSrvc.withConnection = function(url) {
+		console.log('WebsocketSrvc.withConnection()', url);
+		url = url || GWF_CONFIG.ws_url;
 		if (WebsocketSrvc.connected()) {
 			var defer = $q.defer();
 			defer.resolve();
