@@ -10,16 +10,31 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	WebsocketSrvc.SOCKET = null;
 	WebsocketSrvc.CONNECTED = false;
 	
-//	WebsocketSrvc.QUEUE = [];
-//	WebsocketSrvc.QUEUE_INTERVAL = null;
-//	WebsocketSrvc.QUEUE_SEND_MILLIS = 250;
+	////////////
+	// Config //
+	////////////
+	WebsocketSrvc.CONFIG = {
+		url: GWF_CONFIG.ws_url,
+		autoConnect: false,
+		reconnect: true, // @TODO reconnect
+		reconnectTimeout: 10000,
+		keepQueue: true, // @TODO Try to resend queue after reconnect 
+	};
+	WebsocketSrvc.configure = function(config) {
+		console.log('WebsocketSrvc.configure()', config);
+		WebsocketSrvc.CONFIG = config;
+		if (config.autoConnect) {
+			return WebsocketSrvc.connect();
+		}
+	}; WebsocketSrvc.configure(WebsocketSrvc.CONFIG);
+	
 	
 	////////////////
 	// Connection //
 	////////////////
 	WebsocketSrvc.withConnection = function(url) {
 		console.log('WebsocketSrvc.withConnection()', url);
-		url = url || GWF_CONFIG.ws_url;
+		WebsocketSrvc.CONFIG.url = url || WebsocketSrvc.CONFIG.url;
 		if (WebsocketSrvc.connected()) {
 			var defer = $q.defer();
 			defer.resolve();
@@ -29,6 +44,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	}
 
 	WebsocketSrvc.connect = function(url) {
+		url = url || WebsocketSrvc.CONFIG.url;
 		console.log('WebsocketSrvc.connect()', url);
 		var defer = $q.defer();
 		if (WebsocketSrvc.SOCKET == null) {
@@ -154,7 +170,6 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	//////////
 	// Send //
 	//////////
-
 	WebsocketSrvc.sendJSONCommand = function(command, object, async=true) {
 		return WebsocketSrvc.sendCommand(command, JSON.stringify(object), async);
 	};
