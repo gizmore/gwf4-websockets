@@ -23,7 +23,8 @@ class GWS_Commands
 		return method_exists($this, $methodName);
 	}
 	
-	public function disconnect(GWF_User $user) {
+	public function disconnect(GWF_User $user)
+	{
 		GWS_Global::removeUser($user);
 	}
 	

@@ -12,12 +12,11 @@ final class GWS_Global
 	
 	public static function removeUser(GWF_User $user, $reason='NO_REASON')
 	{
-		if (!isset(self::$USERS[$user->getName()])) {
-			return false;
+		if (isset(self::$USERS[$user->getName()]))
+		{
+			GWS_Global::disconnect($user, $reason);
+			unset(self::$USERS[$user->getName()]);
 		}
-		GWS_Global::disconnect($user, $reason);
-		unset(self::$USERS[$user->getName()]);
-		return true;
 	}
 	
 	public static function getUser($name)
@@ -114,7 +113,8 @@ final class GWS_Global
 
 	public static function setConnectionInterface(GWF_User $user, $conn)
 	{
-		if (self::isConnected($user)) {
+		if (self::isConnected($user))
+		{
 			self::disconnect($user);
 		}
 		self::$CONNECTIONS[$user->getName()] = $conn;

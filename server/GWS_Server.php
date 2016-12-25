@@ -31,11 +31,13 @@ final class GWS_Server implements MessageComponentInterface
 	###############
 	### Ratchet ###
 	###############
-	public function onOpen(ConnectionInterface $conn) {
+	public function onOpen(ConnectionInterface $conn)
+	{
 		GWF_Log::logCron(sprintf("GWS_Server::onOpen()"));
 	}
 	
-	public function onMessage(ConnectionInterface $from, $msg) {
+	public function onMessage(ConnectionInterface $from, $msg)
+	{
 // 		GWF_Log::logCron(sprintf("GWS_Server::onMessage(): %s", $msg));
 		if (strlen($msg) > 511) 
 		{
@@ -49,8 +51,9 @@ final class GWS_Server implements MessageComponentInterface
 			{
 				GWS_Global::setConnectionInterface($user, $from);
 			}
-			if ($this->consoleLog) {
-				GWF_Log::logCron(sprintf("%s executes %s", $user->getName(), $message));
+			if ($this->consoleLog)
+			{
+				GWF_Log::logCron(sprintf("%s executes %s", $user->getName(), $msg));
 			}
 			$this->handler->execute($user, $msg);
 		}
@@ -60,14 +63,18 @@ final class GWS_Server implements MessageComponentInterface
 		}
 	}
 	
-	public function onClose(ConnectionInterface $conn) {
+	public function onClose(ConnectionInterface $conn)
+	{
 		GWF_Log::logCron(sprintf("GWS_Server::onClose()"));
-		if ($user = GWS_ServerUtil::getUserForConnection($conn)) {
+		if ($user = GWS_ServerUtil::getUserForConnection($conn))
+		{
 			$this->handler->disconnect($user);
 		}
+		
 	}
 	
-	public function onError(ConnectionInterface $conn, \Exception $e) {
+	public function onError(ConnectionInterface $conn, \Exception $e)
+	{
 		GWF_Log::logCron(sprintf("GWS_Server::onError()"));
 	}
 	
@@ -76,6 +83,7 @@ final class GWS_Server implements MessageComponentInterface
 	############
 	public function initGWSServer($handler, Module_Websockets $gws)
 	{
+		
 		$this->handler = GWS_ServerUtil::$HANDLER = $handler;
 		$this->gws = $gws; $port = $gws->cfgWebsocketPort();
 		GWF_Log::logCron("GWS_Server::initGWSServer() Port $port");

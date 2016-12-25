@@ -9,7 +9,7 @@ final class Module_Websockets extends GWF_Module
 	private static $instance;
 	public static function instance() { return self::$instance; }
 	
-	public function getVersion() { return 4.02; }
+	public function getVersion() { return 4.03; }
 	public function getDefaultPriority() { return 20; }
 	public function getDefaultAutoLoad() { return true; }
 	public function onLoadLanguage() { return $this->loadLanguage('lang/websockets'); }
@@ -59,7 +59,7 @@ final class Module_Websockets extends GWF_Module
 		}
 		else
 		{
-			return '0:0:';
+			return '0:0:x';
 		}
 	}
 	
