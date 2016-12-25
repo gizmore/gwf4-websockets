@@ -6,7 +6,6 @@ class GWS_Commands
 	
 	public function execute(GWF_User $user, $message)
 	{
-		GWF_Log::logCron(sprintf("%s executes %s", $user->getName(), $message));
 		$parts = explode(':', $message, 5);
 		$methodName = 'cmd_'.$parts[3];
 		$payload = $parts[4];

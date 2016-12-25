@@ -15,6 +15,7 @@ final class Module_Websockets extends GWF_Module
 	public function onLoadLanguage() { return $this->loadLanguage('lang/websockets'); }
 	public function onInstall($dropTable) { require_once 'GWF_InstallWebsockets.php'; return GWF_InstallWebsockets::onInstall($this, $dropTable); }
 	
+	public function cfgConsoleLogging() { return $this->getModuleVarBool('ws_console_logging', '1'); }
 	public function cfgAllowGuestConnections() { return $this->getModuleVarBool('ws_guest_connections', '1'); }
 	public function cfgWebsocketURL() { return $this->getModuleVar('ws_url', sprintf('ws://%s:34543', GWF_DOMAIN)); }
 	public function cfgWebsocketPort() { return $this->getModuleVarInt('ws_port', '34543'); }

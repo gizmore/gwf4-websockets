@@ -4,6 +4,7 @@ final class GWF_InstallWebsockets
 	public static function onInstall(Module_Websockets $module, $dropTable)
 	{
 		return GWF_ModuleLoader::installVars($module, array(
+				'ws_console_logging' => array('1', 'bool'),
 				'ws_guest_connections' => array('1', 'bool'),
 				'ws_url' => array(sprintf('ws://%s:34543', GWF_DOMAIN), 'text', '6', '255'),
 				'ws_port' => array('34543', 'int', 1, 65535),

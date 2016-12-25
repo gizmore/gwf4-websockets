@@ -1,6 +1,7 @@
 <?php
 final class GWS_Global
 {
+	public static $LOGGING = false;
 	public static $USERS = array();
 	public static $CONNECTIONS = array();
 	
@@ -71,7 +72,6 @@ final class GWS_Global
 	##################
 	public static function sendError(GWF_User $user, $i18nKey, $args=array())
 	{
-		GWF_Log::logCron(sprintf("%s: %s", $user->getName(), $i18nKey));
 		return self::sendCommand($user, 'ERR', $i18nKey);
 	}
 	
@@ -87,8 +87,12 @@ final class GWS_Global
 	
 	public static function send(GWF_User $user, $messageText)
 	{
-		if (self::isConnected($user)) {
-			GWF_Log::logCron(sprintf('%s << %s', $user->getName(), $messageText));
+		if (self::isConnected($user))
+		{
+			if (self::$LOGGING)
+			{
+				GWF_Log::logCron(sprintf('%s << %s', $user->displayName(), $messageText));
+			}
 			self::$CONNECTIONS[$user->getName()]->send($messageText);
 		}
 	}
