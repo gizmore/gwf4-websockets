@@ -3,10 +3,10 @@
 # http://stackoverflow.com/a/27063586
 cd "$(dirname "$0")"
 PF='./pidfile'
-if kill -0 $(< "$PF"); then # process in pidfile is yours and running
+if kill -0 $(< "$PF") 2> /dev/null; then # process in pidfile is yours and running
+	echo "Websocket server is already running."
     exit 0
 else
-    echo "starting websocket server..."
     echo $$ > "$PF"
     exec ./wgs_server.sh
 fi
