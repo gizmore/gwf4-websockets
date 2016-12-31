@@ -15,6 +15,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	////////////
 	WebsocketSrvc.CONFIG = {
 		url: GWF_CONFIG.ws_url,
+		binary: GWF_CONFIG.ws_binary,
 		autoConnect: false,
 		reconnect: true, // @TODO reconnect
 		reconnectTimeout: 10000,
@@ -50,6 +51,9 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 		if (WebsocketSrvc.SOCKET == null) {
 			LoadingSrvc.addTask('wsconnect');
 			var ws = WebsocketSrvc.SOCKET = new WebSocket(url);
+			if (WebsocketSrvc.CONFIG.binary) {
+				ws.binaryType = 'arraybuffer';
+			}
 			ws.onopen = function() {
 				LoadingSrvc.stopTask('wsconnect');
 				WebsocketSrvc.startQueue();
@@ -181,6 +185,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 			d.reject();
 		}
 		else {
+			
 			if (!async) {
 				var mid = WebsocketSrvc.NEXT_MID++;
 				WebsocketSrvc.SYNC_MSGS[mid] = d;
@@ -203,6 +208,9 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 		console.log('WebsocketSrvc.send()', messageText);
 		WebsocketSrvc.SOCKET.send(messageText);
 	};
+	
+	
+	// Binary //
 
 	return WebsocketSrvc;
 });

@@ -19,6 +19,7 @@ final class Module_Websockets extends GWF_Module
 	public function cfgAllowGuestConnections() { return $this->getModuleVarBool('ws_guest_connections', '1'); }
 	public function cfgWebsocketURL() { return $this->getModuleVar('ws_url', sprintf('ws://%s:34543', GWF_DOMAIN)); }
 	public function cfgWebsocketPort() { return $this->getModuleVarInt('ws_port', '34543'); }
+	public function cfgWebsocketBinary() { return $this->getModuleVarBool('ws_binary', '1'); }
 	public function cfgTimerInterval() { return $this->getModuleVarFloat('ws_timer_interval', '0'); }
 	public function cfgWebsocketProcessorPath() { return $this->getModuleVar('ws_processor_path', $this->defaultProcessorPath()); }
 	public function cfgWebsocketProcessorClass() { return $this->getModuleVar('ws_processor_class', 'GWS_Commands'); }
@@ -42,8 +43,8 @@ final class Module_Websockets extends GWF_Module
 	private function configScript()
 	{
 		return php_sapi_name() === 'cli' ? '' :
-			sprintf(' GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_secret = "%s";', 
-				$this->cfgWebsocketURL(), $this->websocketSecret());
+			sprintf(' GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_secret = "%s"; GWF_CONFIG.ws_binary = %s;', 
+				$this->cfgWebsocketURL(), $this->websocketSecret(), $this->cfgWebsocketBinary()?'true':'false');
 	}
 	
 	private function websocketSecret()
@@ -70,6 +71,10 @@ final class Module_Websockets extends GWF_Module
 			if ($bar === 'left')
 			{
 				return $this->template('connect-bar.php');
+			}
+			if ($bar === 'right')
+			{
+				return $this->template('stats-bar.php');
 			}
 		}
 	}

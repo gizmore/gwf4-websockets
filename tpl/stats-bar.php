@@ -1,10 +1,15 @@
-<md-toolbar class="md-theme-indigo"layout-align="right">
-	<h1 class="md-toolbar-tools"><?php echo $lang->lang('title_connect'); ?></h1>
-	<md-content layout-margin ng-controller="ConnectCtrl" class="gwf-connect-bar">
-		<div><?php echo $lang->lang('connection_state'); ?>: {{data.state.text}}</div>
-		<section>
-			<md-button ng-if="!data.state.bool" ng-click="connect()"><?php echo $lang->lang('btn_connect')?></md-button>
-			<md-button ng-if="data.state.bool" ng-click="disconnect()"><?php echo $lang->lang('btn_disconnect')?></md-button>
-		</section>
+<md-toolbar class="md-theme-indigo" layout-align="right" ng-controller="WSStatsCtrl">
+
+	<h1 class="md-toolbar-tools"><?php echo $lang->lang('title_stats'); ?></h1>
+	<md-content layout-margin class="gwf-connect-bar">
+		<gwf-status><label>CPU</label><value>{{data.cpu}}</value></gwf-status>
+		<gwf-status><label>Users</label><value>{{data.users}}</value></gwf-status>
+		<gwf-status><label>Now Memory</label><value>{{data.mem}}</value></gwf-status>
+		<gwf-status><label>PeakMemory</label><value>{{data.peak}}</value></gwf-status>
 	</md-content>
+	
+	<gwf-buttons>
+		<md-button ng-click="refresh()">Refresh</md-button>
+	</gwf-buttons>
+
 </md-toolbar>

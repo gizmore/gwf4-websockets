@@ -52,6 +52,17 @@ class GWS_Commands
 	################
 	### Commands ###
 	################
+	public function cmd_binary(GWF_User $user, $payload, $mid)
+	{
+		$packet = new GWS_Packet(255, $mid);
+		$packet->addByte(255);
+		$packet->addByte(0);
+		$packet->addWord(0);
+		$packet->addWord(256);
+		$packet->addLong(3123456789);
+		GWS_Global::send($user, $packet);
+	}
+	
 	public function cmd_ping(GWF_User $user, $payload, $mid)
 	{
 		$clientVersion = $payload;
@@ -60,13 +71,13 @@ class GWS_Commands
 	
 	public function cmd_stats(GWF_User $user, $payload, $mid)
 	{
-		$stats = array(
-			'players' => count(GWS_Global::$userS),
+		$payload = json_encode(array(
+			'players' => count(GWS_Global::$USERS),
 			'memory' => memory_get_usage(),
 			'peak' => memory_get_peak_usage(true),
-			'cpu' => 1.00,
-		);
-		GWS_Global::sendJSONCommand($user, 'STATS', $stats);
+			'cpu' => -1.00,
+		));
+		GWS_Global::sendCommand($user, 'STATS', self::payload($payload, $mid));
 	}
 	
 	public function cmd_user(GWF_User $user, $payload, $mid)
