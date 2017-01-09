@@ -85,12 +85,29 @@ final class GWS_Server implements MessageComponentInterface
 	{
 		
 		$this->handler = GWS_ServerUtil::$HANDLER = $handler;
-		$this->gws = $gws; $port = $gws->cfgWebsocketPort();
+		$this->gws = $gws;
+		$port = $gws->cfgWebsocketPort();
 		GWF_Log::logCron("GWS_Server::initGWSServer() Port $port");
 		$this->allowGuests = $gws->cfgAllowGuestConnections();
 		$this->consoleLog = GWS_Global::$LOGGING = $gws->cfgConsoleLogging();
-		$this->server = IoServer::factory(new HttpServer(new WsServer($this)), $port);
+		$this->server = IoServer::factory(new HttpServer(new WsServer($this)), $port, $this->socketOptions());
 		$this->handler->init();
 		return true;
+	}
+	
+	private function socketOptions()
+	{
+		$pemCert = $gws->cfgWebsocketCert();
+		if (empty($pemCert))
+		{
+			return array();
+		}
+		else
+		{
+			return array(
+				'local_cert' => $pemCert,
+			);
+		}
+		
 	}
 }
