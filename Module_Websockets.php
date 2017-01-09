@@ -18,6 +18,7 @@ final class Module_Websockets extends GWF_Module
 	public function cfgConsoleLogging() { return $this->getModuleVarBool('ws_console_logging', '1'); }
 	public function cfgAllowGuestConnections() { return $this->getModuleVarBool('ws_guest_connections', '1'); }
 	public function cfgWebsocketURL() { return $this->getModuleVar('ws_url', sprintf('ws://%s:34543', GWF_DOMAIN)); }
+	public function cfgWebsocketCert() { return $this->getModuleVar('ws_cert', ''); }
 	public function cfgWebsocketPort() { return $this->getModuleVarInt('ws_port', '34543'); }
 	public function cfgWebsocketBinary() { return $this->getModuleVarBool('ws_binary', '1'); }
 	public function cfgTimerInterval() { return $this->getModuleVarFloat('ws_timer_interval', '0'); }

@@ -6,6 +6,7 @@ final class GWF_InstallWebsockets
 		return GWF_ModuleLoader::installVars($module, array(
 				'ws_console_logging' => array('1', 'bool'),
 				'ws_guest_connections' => array('1', 'bool'),
+				'ws_cert' => array('', 'text', '0', '512'),
 				'ws_url' => array(sprintf('ws://%s:34543', GWF_DOMAIN), 'text', '6', '255'),
 				'ws_port' => array('34543', 'int', 1, 65535),
 				'ws_timer_interval' => array('0.0', 'float', '0', '186400'),

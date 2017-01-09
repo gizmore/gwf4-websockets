@@ -4,7 +4,7 @@
 */
 # Security headers
 
-require_once 'module/Websockets/vendor/autoload.php';
+require_once 'module/Websockets/gwf4-ratchet/autoload.php';
 
 # Load config
 require_once 'protected/config.php'; # <-- You might need to adjust this path.
