@@ -4,7 +4,7 @@ class GWS_Commands
 	const DEFAULT_MID = '0000000';
 	const MID_LENGTH = 7;
 	
-	public function execute(GWF_User $user, $message)
+	public function executeTextMessage(GWF_User $user, $message)
 	{
 		$parts = explode(':', $message, 5);
 		$methodName = 'cmd_'.$parts[3];
@@ -17,6 +17,18 @@ class GWS_Commands
 		return call_user_func(array($this, $methodName), $user, $payload, $mid);
 	}
 	
+	public function executeBinaryMessage(GWS_Message $message)
+	{
+		$method_name = sprintf('xcmd_%04X', $message->cmd());
+		printf($method_name);
+		if (method_exists($this, $method_name))
+		{
+			$callback = array($this, $method_name);
+			call_user_func($callback, $message);
+		}
+	}
+	
+	#######
 	public function validCommand($commandName)
 	{
 		$methodName = 'cmd_'.$commandName;
@@ -52,15 +64,29 @@ class GWS_Commands
 	################
 	### Commands ###
 	################
-	public function cmd_binary(GWF_User $user, $payload, $mid)
+	public function xcmd_0000(GWS_Message $msg)
 	{
-		$packet = new GWS_Packet(255, $mid);
-		$packet->addByte(255);
-		$packet->addByte(0);
-		$packet->addWord(0);
-		$packet->addWord(256);
-		$packet->addLong(3123456789);
-		GWS_Global::send($user, $packet);
+		$msg->replyError(0x0404); // Ney
+	}
+
+	public function xcmd_0001(GWS_Message $msg)
+	{
+		$msg->replyError(0x0005); // already authed
+	}
+	
+	public function xcmd_0002(GWS_Message $msg)
+	{
+		$msg->replyBinary(0x0002); // pong
+	}
+
+	public function xcmd_0101(GWS_Message $msg)
+	{
+		$payload = '';
+		$payload.= $msg->write32(memory_get_usage());
+		$payload.= $msg->write32(memory_get_peak_usage(true));
+		$payload.= $msg->write16(count(GWS_Global::$USERS));
+		$payload.= $msg->write8(100);
+		$msg->replyBinary(0x0101, $payload);
 	}
 	
 	public function cmd_ping(GWF_User $user, $payload, $mid)

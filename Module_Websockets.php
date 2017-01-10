@@ -34,6 +34,7 @@ final class Module_Websockets extends GWF_Module
 		if (GWF_Session::hasSession())
 		{
 			GWF_Website::addJavascriptInline($this->configScript());
+			$this->addJavascript('gws-message.js');
 			$this->addJavascript('gws-command-service.js');
 			$this->addJavascript('gws-connect-controller.js');
 			$this->addJavascript('gws-stats-controller.js');
@@ -44,8 +45,8 @@ final class Module_Websockets extends GWF_Module
 	private function configScript()
 	{
 		return php_sapi_name() === 'cli' ? '' :
-			sprintf(' GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_secret = "%s"; GWF_CONFIG.ws_binary = %s;', 
-				$this->cfgWebsocketURL(), $this->websocketSecret(), $this->cfgWebsocketBinary()?'true':'false');
+			sprintf(' GWF_CONFIG.ws_url = "%s"; GWF_CONFIG.wss_secret = "%s"; GWF_CONFIG.ws_binary = %s; GWF_CONFIG.ws_binary_secret = %s;', 
+				$this->cfgWebsocketURL(), $this->websocketSecret(), $this->cfgWebsocketBinary()?'true':'false', $this->binarySecret());
 	}
 	
 	private function websocketSecret()
@@ -63,6 +64,11 @@ final class Module_Websockets extends GWF_Module
 		{
 			return '0:0:x';
 		}
+	}
+	
+	private function binarySecret()
+	{
+		return sprintf("'%s'", GWF_Session::getCookieValue());
 	}
 	
 	public function sidebarContent($bar)

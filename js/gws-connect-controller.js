@@ -22,7 +22,7 @@ controller('ConnectCtrl', function($scope, WebsocketSrvc, ErrorSrvc, CommandSrvc
 	$scope.$on('gws-ws-open', function() {
 		$scope.data.state.bool = true;
 		$scope.data.state.text = 'established';
-		$scope.$apply();
+//		$scope.$apply();
 	});
 
 	$scope.$on('gws-ws-close', function($event) {
@@ -30,7 +30,7 @@ controller('ConnectCtrl', function($scope, WebsocketSrvc, ErrorSrvc, CommandSrvc
 		$scope.data.state.bool = false;
 		$scope.data.state.text = 'down';
 		WebsocketSrvc.disconnect(false);
-		$scope.$apply();
+//		$scope.$apply();
 	});
 
 });

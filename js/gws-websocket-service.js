@@ -42,8 +42,8 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 			return defer.promise;
 		}
 		return WebsocketSrvc.connect(url);
-	}
-
+	};
+	
 	WebsocketSrvc.connect = function(url) {
 		url = url || WebsocketSrvc.CONFIG.url;
 		console.log('WebsocketSrvc.connect()', url);
@@ -58,8 +58,10 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 				LoadingSrvc.stopTask('wsconnect');
 				WebsocketSrvc.startQueue();
 		    	defer.resolve();
-		    	WebsocketSrvc.CONNECTED = true;
-		    	$rootScope.$broadcast('gws-ws-open');
+		    	WebsocketSrvc.authenticate().then(function(result){
+			    	WebsocketSrvc.CONNECTED = true;
+		    		$rootScope.$broadcast('gws-ws-open');
+		    	});
 			};
 		    ws.onclose = function() {
 				LoadingSrvc.stopTask('wsconnect');
@@ -74,15 +76,11 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 				defer.reject(error);
 		    };
 		    ws.onmessage = function(message) {
-		    	if (message.data.indexOf('ERR:') === 0) {
-		    		ErrorSrvc.showError(message.data, 'User Error');
+		    	if (message.data instanceof ArrayBuffer) {
+		    		WebsocketSrvc.onBinaryMessage(message);
 		    	}
-		    	else if (message.data.indexOf(':MID:') >= 0) {
-		    		if (!WebsocketSrvc.syncMessage(message.data)) {
-		    			WebsocketSrvc.processMessage(mesage.data);
-		    		}
-		    	} else {
-	    			WebsocketSrvc.processMessage(message.data);
+		    	else {
+		    		WebsocketSrvc.onMessage(message);
 		    	}
 		    };
 		}
@@ -92,6 +90,35 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 		return defer.promise;
 	};
 	
+	WebsocketSrvc.onMessage = function(message) {
+    	console.log('WebsocketSrvc.onMessage()', message);
+    	if (message.data.indexOf('ERR:') === 0) {
+    		ErrorSrvc.showError(message.data, 'User Error');
+    	}
+    	else if (message.data.indexOf(':MID:') >= 0) {
+    		if (!WebsocketSrvc.syncMessage(message.data)) {
+    			WebsocketSrvc.processMessage(mesage.data);
+    		}
+    	} else {
+			WebsocketSrvc.processMessage(message.data);
+    	}
+	};
+
+	WebsocketSrvc.onBinaryMessage = function(message) {
+    	console.log('WebsocketSrvc.onBinaryMessage()', message);
+		var gwsMessage = new GWS_Message(message.data);
+		gwsMessage.dump();
+		var command = gwsMessage.readCmd();
+		if (gwsMessage.isSync()) {
+			var mid = gwsMessage.readMid();
+			if (WebsocketSrvc.SYNC_MSGS[mid]) {
+				WebsocketSrvc.SYNC_MSGS[mid].resolve(gwsMessage);
+				WebsocketSrvc.SYNC_MSGS[mid] = undefined; // TODO delete array element
+			}
+		}
+		$rootScope.$broadcast('gws-ws-message', gwsMessage);
+	};
+
 	WebsocketSrvc.processMessage = function(messageText) {
 		console.log('ConnectCtrl.processMessage()', messageText);
 		var command = messageText.substrUntil(':');
@@ -116,8 +143,26 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 		}
 	};
 	
+	//////////
+	// Auth //
+	//////////
 	WebsocketSrvc.connected = function() {
 		return WebsocketSrvc.SOCKET ? true : false;
+	};
+	
+	WebsocketSrvc.authenticate = function() {
+		var w = WebsocketSrvc;
+		return w.sendBinary(GWS_Message().cmd(0x0001).sync().writeString(GWF_CONFIG.ws_binary_secret)).then(w.authenticated, w.authFailure);
+	};
+
+	WebsocketSrvc.authenticated = function(payload) {
+		console.log('WebsocketSrvc.authenticated()', payload);
+		GWF_USER.update(JSON.parse(payload));
+	};
+
+	WebsocketSrvc.authFailure = function(error) {
+		console.log('WebsocketSrvc.authFailure()', error);
+		ErrorSrvc.showError(error, 'Websocket Authentication');
 	};
 
 	////////////////////////
@@ -137,10 +182,8 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 		var payload = parts[3];
 		
 		if (WebsocketSrvc.SYNC_MSGS[mid]) {
-			if (WebsocketSrvc.SYNC_MSGS[mid]) {
-				WebsocketSrvc.SYNC_MSGS[mid].resolve(payload);
-				WebsocketSrvc.SYNC_MSGS[mid] = undefined;
-			}
+			WebsocketSrvc.SYNC_MSGS[mid].resolve(payload);
+			WebsocketSrvc.SYNC_MSGS[mid] = undefined;
 		}
 		
 		return true;
@@ -200,7 +243,6 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 				d.resolve();
 			}
 		}
-		
 		return d.promise;
 	};
 	
@@ -211,6 +253,23 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	
 	
 	// Binary //
+	WebsocketSrvc.sendBinary = function(gwsMessage) {
+		var d = $q.defer();
+		if (WebsocketSrvc.connected()) {
+			if (gwsMessage.SYNC > 0) {
+				WebsocketSrvc.SYNC_MSGS[gwsMessage.SYNC] = d;
+			}
+			else {
+				d.resolve();
+			}
+			gwsMessage.dump();
+			WebsocketSrvc.SOCKET.send(gwsMessage.binaryBuffer());
+		}
+		else {
+			d.reject();
+		}
+		return d.promise;
+	};
 
 	return WebsocketSrvc;
 });
