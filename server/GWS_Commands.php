@@ -4,23 +4,18 @@ class GWS_Commands
 	const DEFAULT_MID = '0000000';
 	const MID_LENGTH = 7;
 	
-	public function executeTextMessage(GWF_User $user, $message)
+	public function executeTextMessage(GWS_Message $message)
 	{
-		$parts = explode(':', $message, 5);
-		$methodName = 'cmd_'.$parts[3];
-		$payload = $parts[4];
-		$mid = self::DEFAULT_MID;
-		if (substr($payload, 0, 4) === 'MID:') {
-			$mid = substr($payload, 4, self::MID_LENGTH);
-			$payload = substr($payload, 12);
+		$methodName = 'cmd_'.$message->cmd();
+		if (method_exists($this, $methodName))
+		{
+			return call_user_func(array($this, $methodName), $message);
 		}
-		return call_user_func(array($this, $methodName), $user, $payload, $mid);
 	}
 	
 	public function executeBinaryMessage(GWS_Message $message)
 	{
 		$method_name = sprintf('xcmd_%04X', $message->cmd());
-		printf($method_name);
 		if (method_exists($this, $method_name))
 		{
 			$callback = array($this, $method_name);

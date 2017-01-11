@@ -38,9 +38,23 @@ final class GWS_Server implements MessageComponentInterface
 		GWF_Log::logCron(sprintf("GWS_Server::onOpen()"));
 	}
 
+	public function onMessage(ConnectionInterface $from, $data)
+	{
+		printf("      0: %s\n", $data);
+		$message = new GWS_Message($data, $from);
+		$message->readTextCmd();
+		if ($from->user())
+		{
+			$this->handler->executeTextMessage($message);
+		}
+		else
+		{
+			$message->replyError(0x0002);
+		}
+	}
+	
 	public function onBinaryMessage(ConnectionInterface $from, $data)
 	{
-// 		GWF_Log::logCron(sprintf("GWS_Server::onBinaryMessage(): %s", $data));
 		echo GWS_ServerUtil::hexdump($data);
 		$message = new GWS_Message($data, $from);
 		$message->readCmd();
@@ -78,49 +92,6 @@ final class GWS_Server implements MessageComponentInterface
 			GWF_Session::commit();
 			$message->replyText('AUTH', json_encode($user->getGDODataFields(array('user_name', 'user_guest_name', 'user_id', 'user_credits'))));
 		}
-	}
-	
-	
-	public function onMessage(ConnectionInterface $from, $msg)
-	{
-		GWF_Log::logCron(sprintf("GWS_Server::onMessage(): %s", $msg));
-		if (strlen($msg) > 511) 
-		{
-			$from->send('ERR:ERR_MSG_LENGTH_EXCEED:511');
-			return;
-		}
-		
-		if ($user = $from->user()) {
-			if ($this->consoleLog)
-			{
-				GWF_Log::logCron(sprintf("%s executes %s", $user->getName(), $msg));
-			}
-			$this->handler->executeTextMessage($user, $msg);
-		}
-		else
-		{
-			$from->send('ERR:AUTH_REQUIRED');
-		}
-		
-// 		$user = GWS_ServerUtil::getUserForMessage($msg, $this->allowGuests);
-// 		if ($user instanceof GWF_User)
-// 		{
-// 			if (!GWS_Global::isConnected($user))
-// 			{
-// 				GWS_Global::setConnectionInterface($user, $from);
-// 			}
-// 			if ($this->consoleLog)
-// 			{
-// 				GWF_Log::logCron(sprintf("%s executes %s", $user->getName(), $msg));
-// 			}
-// 			$this->handler->execute($user, $msg);
-// 		}
-// 		else
-// 		{
-// 			$from->send('ERR:'.$user);
-// 		}
-		
-		
 	}
 	
 	public function onClose(ConnectionInterface $conn)

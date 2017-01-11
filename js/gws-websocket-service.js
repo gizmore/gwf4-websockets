@@ -4,9 +4,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	
 	var WebsocketSrvc = this;
 	
-	WebsocketSrvc.NEXT_MID = 1000000;
 	WebsocketSrvc.SYNC_MSGS = {};
-	
 	WebsocketSrvc.SOCKET = null;
 	WebsocketSrvc.CONNECTED = false;
 	
@@ -43,6 +41,14 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 		}
 		return WebsocketSrvc.connect(url);
 	};
+	
+	WebsocketSrvc.withConn = function(callback) {
+		return WebsocketSrvc.withConnection().then(callback, WebsocketSrvc.connectionFailure);
+	};
+	
+	WebsocketSrvc.connectionFailure = function(error) {
+		ErrorSrvc.showError(error, 'Websocket');
+	}
 	
 	WebsocketSrvc.connect = function(url) {
 		url = url || WebsocketSrvc.CONFIG.url;
@@ -217,28 +223,19 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	//////////
 	// Send //
 	//////////
-	WebsocketSrvc.sendJSONCommand = function(command, object, async=true) {
-		return WebsocketSrvc.sendCommand(command, JSON.stringify(object), async);
-	};
-	
-	WebsocketSrvc.sendCommand = function(command, payload, async=true) {
+	WebsocketSrvc.sendCommand = function(command, payload='', async=true) {
 		var d = $q.defer();
 		if (!WebsocketSrvc.connected()) {
 //			WebsocketSrvc.QUEUE.push(messageText);
 			d.reject();
 		}
 		else {
-			
 			if (!async) {
-				var mid = WebsocketSrvc.NEXT_MID++;
+				var mid = GWS_Message.nextMid();
 				WebsocketSrvc.SYNC_MSGS[mid] = d;
 				payload = sprintf('MID:%s:%s', mid, payload);
 			}
-			
-			var messageText = GWF_USER.secret()+":"+command+":"+payload;
-			
-			WebsocketSrvc.send(messageText);
-			
+			WebsocketSrvc.send(command+":"+payload);
 			if (async) {
 				d.resolve();
 			}

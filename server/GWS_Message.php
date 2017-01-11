@@ -47,6 +47,8 @@ final class GWS_Message
 	##############
 	### Reader ###
 	##############
+	public function readPayload() { return $this->data; }
+	public function readJSON() { return json_encode($this->data); }
 	public function read8($index=-1) { return $this->readN(1, $index); }
 	public function read16($index=-1) { return $this->readN(2, $index); }
 	public function read24($index=-1) { return $this->readN(3, $index); }
@@ -82,6 +84,21 @@ final class GWS_Message
 		$this->command = $cmd & 0x7FFF;
 		return $this;
 	}
+	
+	public function readTextCmd()
+	{
+		$firstCol = strpos(':', $this->data);
+		$numParts = strpos(':MID:', $this->data) === $firstCol ? 4 : 2;
+		$parts = explode(':', $this->data, $numParts);
+		if ($numParts === 4)
+		{
+			$this->mid = $parts[2];
+		}
+		$this->command = $parts[0];
+		$this->data = array_pop($parts);
+		return $this;
+	}
+	
 	
 	##############
 	### Writer ###
