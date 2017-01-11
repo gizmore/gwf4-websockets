@@ -13,6 +13,7 @@ final class GWS_Message
 		$this->from = $from;
 	}
 	public function conn() { return $this->from; }
+	public function user() { return $this->from->user(); }
 	public function cmd() { return $this->command; }
 	public function index($index=-1) { $this->index = $index < 0 ? $this->index : $index; return $this->index; }
 	public function isSync() { return $this->mid > 0; }
@@ -87,8 +88,8 @@ final class GWS_Message
 	
 	public function readTextCmd()
 	{
-		$firstCol = strpos(':', $this->data);
-		$numParts = strpos(':MID:', $this->data) === $firstCol ? 4 : 2;
+		$firstCol = strpos($this->data, ':');
+		$numParts = strpos($this->data, ':MID:') === $firstCol ? 4 : 2;
 		$parts = explode(':', $this->data, $numParts);
 		if ($numParts === 4)
 		{

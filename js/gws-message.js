@@ -40,7 +40,7 @@ function GWS_Message(buffer) {
 		var back = 0;
 		for (var i = 0; i < bytes; i++) {
 			back <<= 8;
-			back += this.BUFFER[index++];
+			back |= this.BUFFER[index++];
 		}
 		this.INDEX = index;
 		return back;

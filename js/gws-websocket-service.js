@@ -99,7 +99,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	WebsocketSrvc.onMessage = function(message) {
     	console.log('WebsocketSrvc.onMessage()', message);
     	if (message.data.indexOf('ERR:') === 0) {
-    		ErrorSrvc.showError(message.data, 'User Error');
+    		ErrorSrvc.showError(message.data, 'Protocol error');
     	}
     	else if (message.data.indexOf(':MID:') >= 0) {
     		if (!WebsocketSrvc.syncMessage(message.data)) {
@@ -115,14 +115,27 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 		var gwsMessage = new GWS_Message(message.data);
 		gwsMessage.dump();
 		var command = gwsMessage.readCmd();
-		if (gwsMessage.isSync()) {
-			var mid = gwsMessage.readMid();
+		var mid = gwsMessage.isSync() ? gwsMessage.readMid() : 0;
+		var error = command > 0 ? 0 : gwsMessage.read16();
+		if (mid > 0) {
 			if (WebsocketSrvc.SYNC_MSGS[mid]) {
-				WebsocketSrvc.SYNC_MSGS[mid].resolve(gwsMessage);
+				if (error) {
+					ErrorSrvc.showError(sprintf('Code: %04X', error), 'Protocol error');
+					WebsocketSrvc.SYNC_MSGS[mid].reject(error);
+				}
+				else {
+					WebsocketSrvc.SYNC_MSGS[mid].resolve(gwsMessage);
+				}
+					
 				WebsocketSrvc.SYNC_MSGS[mid] = undefined; // TODO delete array element
 			}
 		}
-		$rootScope.$broadcast('gws-ws-message', gwsMessage);
+		if (error) {
+			
+		}
+		else {
+			$rootScope.$broadcast('gws-ws-message', gwsMessage);
+		}
 	};
 
 	WebsocketSrvc.processMessage = function(messageText) {
