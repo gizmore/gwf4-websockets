@@ -20,14 +20,9 @@ final class GWS_Server implements MessageComponentInterface
 		GWF_Log::logMessage("GWS_Server::mainloop()");
 		if ($timerInterval > 0)
 		{
-			$this->server->loop->addPeriodicTimer($timerInterval, array($this, 'mainTimer'));
+			$this->server->loop->addPeriodicTimer($timerInterval, array($this->handler, 'timer'));
 		}
 		$this->server->run();
-	}
-	
-	public function mainTimer()
-	{
-		$this->handler->timer();
 	}
 	
 	###############
@@ -40,7 +35,7 @@ final class GWS_Server implements MessageComponentInterface
 
 	public function onMessage(ConnectionInterface $from, $data)
 	{
-		printf("      0: %s\n", $data);
+		printf("%s >> %s\n", $from->user() ? $from->user()->displayName() : '???', $data);
 		$message = new GWS_Message($data, $from);
 		$message->readTextCmd();
 		if ($from->user())
@@ -55,13 +50,16 @@ final class GWS_Server implements MessageComponentInterface
 	
 	public function onBinaryMessage(ConnectionInterface $from, $data)
 	{
+		printf("%s >> BIN\n", $from->user() ? $from->user()->displayName() : '???');
 		echo GWS_ServerUtil::hexdump($data);
 		$message = new GWS_Message($data, $from);
 		$message->readCmd();
-		if (!$from->user()) {
+		if (!$from->user())
+		{
 			$this->onAuthBinary($message);
 		}
-		else {
+		else
+		{
 			$this->handler->executeBinaryMessage($message);
 		}
 	}
@@ -101,7 +99,6 @@ final class GWS_Server implements MessageComponentInterface
 		{
 			$this->handler->disconnect($user);
 		}
-		
 	}
 	
 	public function onError(ConnectionInterface $conn, \Exception $e)
@@ -128,7 +125,7 @@ final class GWS_Server implements MessageComponentInterface
 	
 	private function socketOptions()
 	{
-		$pemCert = $this->gws->cfgWebsocketCert();
+		$pemCert = trim($this->gws->cfgWebsocketCert());
 		if (empty($pemCert))
 		{
 			return array();
@@ -141,6 +138,5 @@ final class GWS_Server implements MessageComponentInterface
 				),
 			);
 		}
-		
 	}
 }

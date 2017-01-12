@@ -97,7 +97,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	};
 	
 	WebsocketSrvc.onMessage = function(message) {
-    	console.log('WebsocketSrvc.onMessage()', message);
+    	console.log('WebsocketSrvc.onMessage()', message.data);
     	if (message.data.indexOf('ERR:') === 0) {
     		ErrorSrvc.showError(message.data, 'Protocol error');
     	}
@@ -111,9 +111,8 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	};
 
 	WebsocketSrvc.onBinaryMessage = function(message) {
-    	console.log('WebsocketSrvc.onBinaryMessage()', message);
 		var gwsMessage = new GWS_Message(message.data);
-		gwsMessage.dump();
+		console.log('WebsocketSrvc.onBinaryMessage()', gwsMessage.dump());
 		var command = gwsMessage.readCmd();
 		var mid = gwsMessage.isSync() ? gwsMessage.readMid() : 0;
 		var error = command > 0 ? 0 : gwsMessage.read16();
@@ -126,20 +125,26 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 				else {
 					WebsocketSrvc.SYNC_MSGS[mid].resolve(gwsMessage);
 				}
-					
 				WebsocketSrvc.SYNC_MSGS[mid] = undefined; // TODO delete array element
+				return;
 			}
 		}
-		if (error) {
-			
+		if (!error) {
+			var method = sprintf('xcmd_%04X', command);
+			if (CommandSrvc[method]) {
+				setTimeout(CommandSrvc[method].bind(CommandSrvc, gwsMessage), 1);
+			}
+			else {
+				$rootScope.$broadcast('gws-ws-message', gwsMessage);
+			}
 		}
 		else {
-			$rootScope.$broadcast('gws-ws-message', gwsMessage);
+			ErrorSrvc.showError(sprintf('Code: %04X', error), 'Protocol error');
 		}
 	};
 
 	WebsocketSrvc.processMessage = function(messageText) {
-		console.log('ConnectCtrl.processMessage()', messageText);
+//		console.log('ConnectCtrl.processMessage()', messageText);
 		var command = messageText.substrUntil(':');
 		if (CommandSrvc[command]) {
 			CommandSrvc[command](messageText.substrFrom(':'));
@@ -150,11 +155,10 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	};
 
 	WebsocketSrvc.disconnect = function(event) {
-		console.log('WebsocketSrvc.disconnect()');
+//		console.log('WebsocketSrvc.disconnect()');
 		if (WebsocketSrvc.SOCKET != null) {
 			WebsocketSrvc.SOCKET.close();
 			WebsocketSrvc.SOCKET = null;
-			WebsocketSrvc.NEXT_MID = 1000000;
 			WebsocketSrvc.SYNC_MSGS = {};
 			if (event) {
 				$rootScope.$broadcast('gws-ws-disconnect');
@@ -166,7 +170,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	// Auth //
 	//////////
 	WebsocketSrvc.connected = function() {
-		return WebsocketSrvc.SOCKET ? true : false;
+		return !!WebsocketSrvc.SOCKET;
 	};
 	
 	WebsocketSrvc.authenticate = function() {
@@ -175,22 +179,18 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	};
 
 	WebsocketSrvc.authenticated = function(payload) {
-		console.log('WebsocketSrvc.authenticated()', payload);
+//		console.log('WebsocketSrvc.authenticated()', payload);
 		GWF_USER.update(JSON.parse(payload));
 	};
 
 	WebsocketSrvc.authFailure = function(error) {
-		console.log('WebsocketSrvc.authFailure()', error);
+//		console.log('WebsocketSrvc.authFailure()', error);
 		ErrorSrvc.showError(error, 'Websocket Authentication');
 	};
 
 	////////////////////////
 	// Sync Protocol part //
 	////////////////////////
-	WebsocketSrvc.nextMid = function() {
-		return sprintf('%7d', WebsocketSrvc.NEXT_MID++);
-	};
-
 	WebsocketSrvc.syncMessage = function(messageText) {
 		var parts = explode(':', messageText, 4);
 		var cmd = parts[0];
@@ -212,7 +212,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 	// Send Queue on reconnect //
 	/////////////////////////////
 	WebsocketSrvc.startQueue = function() {
-		console.log('WebsocketSrvc.startQueue()');
+//		console.log('WebsocketSrvc.startQueue()');
 		if (WebsocketSrvc.QUEUE_INTERVAL === null) {
 			WebsocketSrvc.QUEUE_INTERVAL = setInterval(WebsocketSrvc.flushQueue, WebsocketSrvc.QUEUE_SEND_MILLIS);
 		}
@@ -272,7 +272,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 			else {
 				d.resolve();
 			}
-			gwsMessage.dump();
+			console.log('WebsocketSrvc.sendBinary()', gwsMessage.dump());
 			WebsocketSrvc.SOCKET.send(gwsMessage.binaryBuffer());
 		}
 		else {

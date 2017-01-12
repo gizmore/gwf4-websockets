@@ -35,11 +35,6 @@ class GWS_Commands
 		GWS_Global::removeUser($user);
 	}
 	
-	public static function payload($payload, $mid=self::DEFAULT_MID)
-	{
-		return $mid === self::DEFAULT_MID ? $payload : sprintf('MID:%7s:%s', $mid, $payload);
-	}
-	
 	############
 	### Init ###
 	############
@@ -83,34 +78,4 @@ class GWS_Commands
 		$payload.= $msg->write8(100);
 		$msg->replyBinary(0x0101, $payload);
 	}
-	
-	public function cmd_ping(GWF_User $user, $payload, $mid)
-	{
-		$clientVersion = $payload;
-		GWS_Global::sendCommand($user, 'PONG', self::payload('1.0.0', $mid));
-	}
-	
-	public function cmd_stats(GWF_User $user, $payload, $mid)
-	{
-		$payload = json_encode(array(
-			'players' => count(GWS_Global::$USERS),
-			'memory' => memory_get_usage(),
-			'peak' => memory_get_peak_usage(true),
-			'cpu' => -1.00,
-		));
-		GWS_Global::sendCommand($user, 'STATS', self::payload($payload, $mid));
-	}
-	
-	public function cmd_user(GWF_User $user, $payload, $mid)
-	{
-		if (!($p = GWS_ServerUtil::getUserForName($payload)))
-		{
-			return GWS_Global::sendError($user, 'ERR_UNKNOWN_PLAYER');
-		}
-		$payload = json_encode(array(
-			'player' => array_merge(array('name' => $p->getName(), 'hash' => $p->getStatsHash()), $p->playerDTO()),
-		));
-		GWS_Global::sendCommand($user, 'USER', self::payload($payload, $mid));
-	}
-	
 }

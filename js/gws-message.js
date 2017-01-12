@@ -53,7 +53,7 @@ function GWS_Message(buffer) {
 		}
 		return decodeURIComponent(back);
 	};
-	this.readCmd = function() { return this.read16() & 0x7F; }
+	this.readCmd = function() { return this.read16() & 0x7FFF; }
 	this.readMid = function() { return this.read24(); };
 
 	////////////
@@ -100,13 +100,11 @@ function GWS_Message(buffer) {
 	// Debug //
 	///////////
 	this.dump = function() {
-		console.log(this);
-		var dump = '';
-		var i = 0;
+		var dump = '', i = 0;
 		while (i < this.LENGTH) {
 			dump += sprintf(' %02X', this.BUFFER[i++]);
 		}
-		console.log(dump);
+		return dump;
 	};
 
 	// yeah

@@ -24,13 +24,13 @@ final class GWS_Message
 	public function replyText($command, $data='')
 	{
 		$payload = $this->mid > 0 ? "$command:MID:$this->mid:$data" : "$command:$data";
-		printf("GWS_Message::replyText(%s)\n", $payload);
+		printf("%s << %s\n", $this->user() ? $this->user()->displayName() : '???', $payload);
 		return $this->from->send($payload);
 	}
 	
 	public function replyBinary($command, $data='')
 	{
-		printf("GWS_Message::replyBinary()\n");
+		printf("%s << BIN\n", $this->user() ? $this->user()->displayName() : '???');
 		$command |= $this->mid > 0 ? 0x8000 : 0;
 		$payload = '';
 		$payload.= $this->write16($command);
@@ -104,11 +104,17 @@ final class GWS_Message
 	##############
 	### Writer ###
 	##############
-	public function write8($value, $index=-1) { return $this->writeN(1, $value, $index); }
-	public function write16($value, $index=-1) { return $this->writeN(2, $value, $index); }
-	public function write24($value, $index=-1) { return $this->writeN(3, $value, $index); }
-	public function write32($value, $index=-1) { return $this->writeN(4, $value, $index); }
-	public function writeN($bytes, $value, $index=-1)
+	public function writeString($string) { return self::wrS($string); }
+	public function write8($value) { return self::wrN(1, $value); }
+	public function write16($value) { return self::wrN(2, $value); }
+	public function write24($value) { return self::wrN(3, $value); }
+	public function write32($value) { return self::wrN(4, $value); }
+	public static function wr8($value) { return self::wrN(1, $value); }
+	public static function wr16($value) { return self::wrN(2, $value); }
+	public static function wr24($value) { return self::wrN(3, $value); }
+	public static function wr32($value) { return self::wrN(4, $value); }
+	public static function wrS($string) { return urlencode($string)."\0"; }
+	public static function wrN($bytes, $value)
 	{
 		$write = '';
 		for ($i = 0; $i < $bytes; $i++)
@@ -117,9 +123,5 @@ final class GWS_Message
 			$value >>= 8;
 		}
 		return $write;
-	}
-	public function writeString($string)
-	{
-		return urlencode($string)."\0";
 	}
 }

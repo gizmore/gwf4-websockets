@@ -69,68 +69,33 @@ final class GWS_Global
 	##################
 	### Connection ###
 	##################
-	public static function sendError(GWF_User $user, $i18nKey, $args=array())
-	{
-		return self::sendCommand($user, 'ERR', $i18nKey);
-	}
-	
-	public static function sendJSONCommand(GWF_User $user, $command, $object)
-	{
-		return self::sendCommand($user, $command, json_encode($object));
-	}
-	
-	public static function sendCommand(GWF_User $user, $command, $payload)
-	{
-		return self::send($user, "$command:$payload");
-	}
-	
-	public static function send(GWF_User $user, $messageText)
-	{
-		if (self::isConnected($user))
-		{
-			if (self::$LOGGING)
-			{
-				GWF_Log::logCron(sprintf('%s << %s', $user->displayName(), $messageText));
-			}
-			self::$CONNECTIONS[$user->getName()]->send($messageText);
-		}
-	}
-	
 	public static function disconnect(GWF_User $user, $reason="NO_REASON")
 	{
 		if (self::isConnected($user))
 		{
-			self::send($user, "CLOSE:".$reason);
-			unset(self::$CONNECTIONS[$user->getName()]);
+			self::getConnectionInterface($user)->send($user, "CLOSE:".$reason);
+			unset(self::$CONNECTIONS[$user->getID()]);
 		}
 	}
 	
-	public static function isConnected(GWF_User $user)
+	public static function isConnected($user)
 	{
-		return isset(self::$CONNECTIONS[$user->getName()]);
+		return isset(self::$CONNECTIONS[$user->getID()]);
 	}
 	
 
-	public static function setConnectionInterface(GWF_User $user, $conn)
+	public static function setConnectionInterface($user, $conn)
 	{
 		if (self::isConnected($user))
 		{
 			self::disconnect($user);
 		}
-		self::$CONNECTIONS[$user->getName()] = $conn;
+		self::$CONNECTIONS[$user->getID()] = $conn;
 	}
 	
-	public static function getInterfaceConnection(GWF_User $user)
+	public static function getConnectionInterface($user)
 	{
-		return isset(self::$CONNECTIONS[$user->getName()]) ? self::$CONNECTIONS[$user->getName()] : false;
+		return isset(self::$CONNECTIONS[$user->getID()]) ? self::$CONNECTIONS[$user->getID()] : false;
 	}
-	
-	public static function getIPForUser(GWF_User $user)
-	{
-		if ($connection = self::getInterfaceConnection($user))
-		{
-			return GWF_IP6::getIP(GWF_IP_QUICK, $connection->getRemoteAddress());
-		}
-		return false;
-	}
+
 }
