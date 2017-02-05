@@ -119,7 +119,7 @@ service('WebsocketSrvc', function($q, $rootScope, ErrorSrvc, CommandSrvc, Loadin
 		if (mid > 0) {
 			if (WebsocketSrvc.SYNC_MSGS[mid]) {
 				if (error) {
-					ErrorSrvc.showError(sprintf('Code: %04X', error), 'Protocol error');
+					ErrorSrvc.showError(sprintf('Code: %04X', error).gwsMessage.readString(), 'Protocol error');
 					WebsocketSrvc.SYNC_MSGS[mid].reject(error);
 				}
 				else {

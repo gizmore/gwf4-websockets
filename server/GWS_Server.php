@@ -89,6 +89,7 @@ final class GWS_Server implements MessageComponentInterface
 			GWS_Global::setConnectionInterface($user, $message->conn());
 			GWF_Session::commit();
 			$message->replyText('AUTH', json_encode($user->getGDODataFields(array('user_name', 'user_guest_name', 'user_id', 'user_credits'))));
+			$this->handler->connect($user);
 		}
 	}
 	
@@ -97,6 +98,8 @@ final class GWS_Server implements MessageComponentInterface
 		GWF_Log::logCron(sprintf("GWS_Server::onClose()"));
 		if ($user = $conn->user())
 		{
+			$conn->setUser(false);
+			GWS_Global::removeUser($user);
 			$this->handler->disconnect($user);
 		}
 	}
