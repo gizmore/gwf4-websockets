@@ -1,85 +1,54 @@
 <?php
+require_once 'GWS_Command.php';
+
+require_once 'commands/GWSC_Stats.php';
+
+/**
+ * Command handler base class.
+ * Override this and set in websocket module config
+ * @author gizmore
+ */
 class GWS_Commands
 {
-	const DEFAULT_MID = '0000000';
-	const MID_LENGTH = 7;
-	
-	public function executeTextMessage(GWS_Message $message)
-	{
-		$methodName = 'cmd_'.$message->cmd();
-		if (method_exists($this, $methodName))
-		{
-			return call_user_func(array($this, $methodName), $message);
-		}
-	}
-	
-	public function executeBinaryMessage(GWS_Message $message)
-	{
-		$method_name = sprintf('xcmd_%04X', $message->cmd());
-		if (method_exists($this, $method_name))
-		{
-			$callback = array($this, $method_name);
-			call_user_func($callback, $message);
-		}
-	}
-	
-	#######
-	public function validCommand($commandName)
-	{
-		$methodName = 'cmd_'.$commandName;
-		return method_exists($this, $methodName);
-	}
-	
-	public function connect(GWF_User $user)
-	{
-		
-	}
-	
-	public function disconnect(GWF_User $user)
-	{
-	}
-	
-	############
-	### Init ###
-	############
-	public function init()
-	{
-		
-	}
-	
-	#############
-	### Timer ###
-	#############
-	public function timer()
-	{
-	
-	}
+	const MID_LENGTH = 7; # Sync Message ID
+	const DEFAULT_MID = '0000000'; # Sync Message ID
 	
 	################
 	### Commands ###
 	################
-	public function xcmd_0000(GWS_Message $msg)
+	/**
+	 * 
+	 * @var array(GWS_Command)
+	 */
+	public static $COMMANDS = array();
+	public static function register($code, GWS_Command $command, $binary=true)
 	{
-		$msg->replyError(0x0404); // Ney
+		if (isset(self::$COMMANDS[$code]))
+		{
+			throw new Exception(sprintf("duplicate GWS_Command code: '%s' for %s", $code, get_class($command)));
+		}
+		$command->init();
+		self::$COMMANDS[$code] = $command;
 	}
 
-	public function xcmd_0001(GWS_Message $msg)
+	############
+	### Exec ###
+	############
+	public function executeMessage(GWS_Message $message)
 	{
-		$msg->replyError(0x0005); // already authed
-	}
-	
-	public function xcmd_0002(GWS_Message $msg)
-	{
-		$msg->replyBinary(0x0002); // pong
+		$cmd = $message->cmd();
+		if (!isset(self::$COMMANDS[$cmd]))
+		{
+			throw new Exception("Unknown command");
+		}
+		self::$COMMANDS[$cmd]->execute($message);
 	}
 
-	public function xcmd_0101(GWS_Message $msg)
-	{
-		$payload = '';
-		$payload.= $msg->write32(memory_get_usage());
-		$payload.= $msg->write32(memory_get_peak_usage(true));
-		$payload.= $msg->write16(count(GWS_Global::$USERS));
-		$payload.= $msg->write8(100);
-		$msg->replyBinary(0x0101, $payload);
-	}
+	################
+	### Override ###
+	################
+	public function init() {}
+	public function timer() {}
+	public function connect(GWF_User $user) {}
+	public function disconnect(GWF_User $user) {}
 }

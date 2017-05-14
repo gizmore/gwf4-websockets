@@ -17,6 +17,8 @@ final class Module_Websockets extends GWF_Module
 	
 	public function cfgConsoleLogging() { return $this->getModuleVarBool('ws_console_logging', '1'); }
 	public function cfgAllowGuestConnections() { return $this->getModuleVarBool('ws_guest_connections', '1'); }
+	public function cfgForceCookies() { return $this->getModuleVarBool('ws_force_cookies', '0'); }
+	
 	public function cfgWebsocketURL() { return $this->getModuleVar('ws_url', sprintf('ws://%s:34543', GWF_DOMAIN)); }
 	public function cfgWebsocketCert() { return $this->getModuleVar('ws_cert', ''); }
 	public function cfgWebsocketPort() { return $this->getModuleVarInt('ws_port', '34543'); }
@@ -34,11 +36,15 @@ final class Module_Websockets extends GWF_Module
 		if (GWF_Session::hasSession())
 		{
 			GWF_Website::addJavascriptInline($this->configScript());
-			$this->addJavascript('gws-message.js');
-			$this->addJavascript('gws-command-service.js');
-			$this->addJavascript('gws-connect-controller.js');
-			$this->addJavascript('gws-stats-controller.js');
-			$this->addJavascript('gws-websocket-service.js');
+
+			if (Module_GWF::instance()->cfgAngularApp())
+			{
+				$this->addJavascript('gws-message.js');
+				$this->addJavascript('gws-command-service.js');
+				$this->addJavascript('gws-connect-controller.js');
+				$this->addJavascript('gws-stats-controller.js');
+				$this->addJavascript('gws-websocket-service.js');
+			}
 		}
 	}
 	
@@ -49,7 +55,7 @@ final class Module_Websockets extends GWF_Module
 				$this->cfgWebsocketURL(), $this->websocketSecret(), $this->cfgWebsocketBinary()?'true':'false', $this->binarySecret());
 	}
 	
-	private function websocketSecret()
+	public function websocketSecret()
 	{
 		$user = GWF_User::getStaticOrGuest();
 		if ($user->persistentGuest() && $user->isUser())
@@ -66,7 +72,7 @@ final class Module_Websockets extends GWF_Module
 		}
 	}
 	
-	private function binarySecret()
+	public function binarySecret()
 	{
 		return sprintf("'%s'", GWF_Session::getCookieValue());
 	}

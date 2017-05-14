@@ -40,7 +40,12 @@ final class GWS_Server implements MessageComponentInterface
 		$message->readTextCmd();
 		if ($from->user())
 		{
-			$this->handler->executeTextMessage($message);
+			try {
+				$this->handler->executeMessage($message);
+			}
+			catch (Exception $e) {
+				$message->replyErrorMessage($message->cmd(), $e->getMessage());
+			}
 		}
 		else
 		{
@@ -60,7 +65,12 @@ final class GWS_Server implements MessageComponentInterface
 		}
 		else
 		{
-			$this->handler->executeBinaryMessage($message);
+			try {
+				$this->handler->executeMessage($message);
+			}
+			catch (Exception $e) {
+				$message->replyErrorMessage($message->cmd(), $e->getMessage());
+			}
 		}
 	}
 	
@@ -74,7 +84,7 @@ final class GWS_Server implements MessageComponentInterface
 		{
 			$message->replyError(0x0002);
 		}
-		elseif (!GWF_Session::reload($cookie, false, $message->conn()->getRemoteAddress()))
+		elseif (!GWF_Session::reload($cookie, false, false)) #$message->conn()->getRemoteAddress()))
 		{
 			$message->replyError(0x0003);
 		}

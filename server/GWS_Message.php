@@ -13,6 +13,9 @@ final class GWS_Message
 		$this->from = $from;
 	}
 	public function conn() { return $this->from; }
+	/**
+	 * @return GWF_User
+	 */
 	public function user() { return $this->from->user(); }
 	public function cmd() { return $this->command; }
 	public function index($index=-1) { $this->index = $index < 0 ? $this->index : $index; return $this->index; }
@@ -24,13 +27,13 @@ final class GWS_Message
 	public function replyText($command, $data='')
 	{
 		$payload = $this->mid > 0 ? "$command:MID:$this->mid:$data" : "$command:$data";
-		printf("%s << %s\n", $this->user() ? $this->user()->displayName() : '???', $payload);
+		GWF_Log::logWebsocket(sprintf("%s << %s\n", $this->user() ? $this->user()->displayName() : '???', $payload));
 		return $this->from->send($payload);
 	}
 	
 	public function replyBinary($command, $data='')
 	{
-		printf("%s << BIN\n", $this->user() ? $this->user()->displayName() : '???');
+		GWF_Log::logWebsocket(sprintf("%s << BIN\n", $this->user() ? $this->user()->displayName() : '???'));
 		$command |= $this->mid > 0 ? 0x8000 : 0;
 		$payload = '';
 		$payload.= $this->write16($command);
