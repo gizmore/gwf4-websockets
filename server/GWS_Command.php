@@ -5,7 +5,16 @@
  */
 abstract class GWS_Command
 {
-	function init() {}
+	protected $message;
+
+	public function setMessage(GWS_Message $message) { $this->message= $message; return $this; }
 	
-	abstract function execute(GWS_Message $msg);
+	public function user() { return $this->message->user(); }
+	public function message() { return $this->message; }
+	
+	################
+	### Abstract ###
+	################
+	public function init() {}
+	public abstract function execute(GWS_Message $message);
 }

@@ -5,6 +5,9 @@ final class GWS_Global
 	public static $USERS = array();
 	public static $CONNECTIONS = array();
 	
+	##################
+	### User cache ###
+	##################
 	public static function addUser(GWF_User $user)
 	{
 		self::$USERS[$user->getName()] = $user;
@@ -33,6 +36,84 @@ final class GWS_Global
 		return self::loadUser($name, $allowGuests);
 	}
 	
+	#################
+	### Messaging ###
+	#################
+	/**
+	 * @deprecated
+	 * @param GWF_User $user
+	 * @param string $command
+	 * @param string $payload
+	 * @return boolean
+	 */
+	public static function sendCommand(GWF_User $user, $command, $payload)
+	{
+		return self::send($user, "$command:$payload");
+	}
+
+	/**
+	 * @deprecated
+	 * @param GWF_User $user
+	 * @param string $command
+	 * @param array $payload
+	 * @return boolean
+	 */
+	public static function sendJSONCommand(GWF_User $user, $command, $payload)
+	{
+		return self::sendCommand($user, $command, json_encode($payload));
+	}
+	
+	public static function broadcast($payload)
+	{
+		GWF_Log::logWebsocket(sprintf("!BROADCAST! << %s", $payload));
+		foreach (self::$CONNECTIONS as $conn)
+		{
+			$conn->send($payload);
+		}
+		return true;
+	}
+
+	public static function broadcastBinary($payload)
+	{
+		GWF_Log::logWebsocket(sprintf("!BROADCAST!"));
+		GWS_ServerUtil::hexdump($payload);
+		foreach (self::$CONNECTIONS as $conn)
+		{
+			$conn->send($payload);
+		}
+		return true;
+	}
+	
+	public static function send(GWF_User $user, $payload)
+	{
+		if (self::isConnected($user))
+		{
+			GWF_Log::logWebsocket(sprintf("%s << %s", $user->displayName(), $payload));
+			self::getConnectionInterface($user)->send($payload);
+			return true;
+		}
+		else
+		{
+			GWF_Log::logError(sprintf('User %s not connected.', $user->displayName()));
+			return false;
+		}
+	}
+	
+	public static function sendBinary(GWF_User $user, $payload)
+	{
+		if (self::isConnected($user))
+		{
+			GWF_Log::logWebsocket(sprintf("%s << BIN", $user->displayName()));
+			GWS_ServerUtil::hexdump($payload);
+			self::getConnectionInterface($user)->sendBinary($payload);
+			return true;
+		}
+		else
+		{
+			GWF_Log::logWebsocket(sprintf('User %s not connected.', $user->displayName()));
+			return false;
+		}
+	}
 
 	###############
 	### Private ###

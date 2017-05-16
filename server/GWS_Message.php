@@ -27,16 +27,15 @@ final class GWS_Message
 	public function replyText($command, $data='')
 	{
 		$payload = $this->mid > 0 ? "$command:MID:$this->mid:$data" : "$command:$data";
-		GWF_Log::logWebsocket(sprintf("%s << %s\n", $this->user() ? $this->user()->displayName() : '???', $payload));
+		GWF_Log::logWebsocket(sprintf("%s << %s", $this->user() ? $this->user()->displayName() : '???', $payload));
 		return $this->from->send($payload);
 	}
 	
 	public function replyBinary($command, $data='')
 	{
-		GWF_Log::logWebsocket(sprintf("%s << BIN\n", $this->user() ? $this->user()->displayName() : '???'));
-		$command |= $this->mid > 0 ? 0x8000 : 0;
-		$payload = '';
-		$payload.= $this->write16($command);
+		GWF_Log::logWebsocket(sprintf("%s << BIN", $this->user() ? $this->user()->displayName() : '???'));
+		$command |= $this->mid > 0 ? 0x8000 : 0; # Set LSB to mark MID reply sync msg mode.
+		$payload = $this->write16($command);
 		$payload.= $this->mid > 0 ? $this->write24($this->mid) : '';
 		$payload.= $data;
 		GWS_ServerUtil::hexdump($payload);
@@ -50,6 +49,7 @@ final class GWS_Message
 
 	public function replyErrorMessage($code, $message)
 	{
+		GWF_Log::logWebsocket(sprintf('%s: ERROR - %s', $this->user()->displayName(), $message));
 		return $this->replyBinary(0x0000, $this->write16($code).$this->writeString($message));
 	}
 	
@@ -126,6 +126,20 @@ final class GWS_Message
 		return $this;
 	}
 	
+	###############
+	### Factory ###
+	###############
+	/**
+	 * Create the payload for an async message.
+	 * Used only in async communication. 
+	 * @param string|int $cmd
+	 * @param boolean $binary
+	 * @return string
+	 */
+	public static function payload($cmd, $binary=true)
+	{
+		return $binary ? self::wr16($cmd) : "$cmd:";
+	}
 	
 	##############
 	### Writer ###

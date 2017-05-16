@@ -36,12 +36,22 @@ class GWS_Commands
 	############
 	public function executeMessage(GWS_Message $message)
 	{
+		return $this->command($message)->execute($message);
+	}
+	
+	/**
+	 * Get command for a message
+	 * @param GWS_Message $message
+	 * @return GWS_Command
+	 */
+	public function command(GWS_Message $message)
+	{
 		$cmd = $message->cmd();
 		if (!isset(self::$COMMANDS[$cmd]))
 		{
 			throw new Exception("Unknown command");
 		}
-		self::$COMMANDS[$cmd]->execute($message);
+		return self::$COMMANDS[$cmd]->setMessage($message);
 	}
 
 	################
