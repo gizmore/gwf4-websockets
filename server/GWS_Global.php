@@ -27,6 +27,21 @@ final class GWS_Global
 		return isset(self::$USERS[$name]) ? self::$USERS[$name] : false;
 	}
 	
+	/**
+	 * @param int $id
+	 * @return GWF_User
+	 */
+	public static function getUserByID($id)
+	{
+		foreach (self::$USERS as $name => $user)
+		{
+			if ($user->getID() == $id)
+			{
+				return $user;
+			}
+		}
+	}
+	
 	public static function getOrLoadUser($name, $allowGuests)
 	{
 		if (false !== ($user = self::getUser($name)))

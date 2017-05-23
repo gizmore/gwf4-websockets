@@ -12,12 +12,14 @@ final class GWS_Message
 		$this->data = $binary;
 		$this->from = $from;
 	}
+
 	public function conn() { return $this->from; }
+	public function ip() { return $this->from->getRemoteAddress(); }
+	public function cmd() { return $this->command; }
 	/**
 	 * @return GWF_User
 	 */
 	public function user() { return $this->from->user(); }
-	public function cmd() { return $this->command; }
 	public function index($index=-1) { $this->index = $index < 0 ? $this->index : $index; return $this->index; }
 	public function isSync() { return $this->mid > 0; }
 	
@@ -49,7 +51,7 @@ final class GWS_Message
 
 	public function replyErrorMessage($code, $message)
 	{
-		GWF_Log::logWebsocket(sprintf('%s: ERROR - %s', $this->user()->displayName(), $message));
+		GWF_Log::logWebsocket(sprintf('%s: ERROR - %s', ($this->user() ? $this->user()->displayName() : '???'), $message));
 		return $this->replyBinary(0x0000, $this->write16($code).$this->writeString($message));
 	}
 	
@@ -147,6 +149,7 @@ final class GWS_Message
 	public function writeFloat($float) { return self::wrF($float); }
 	public function writeDouble($double) { return self::wrD($double); }
 	public function writeString($string) { return self::wrS($string); }
+	public function writeTimestamp() { return self::wrTS(); }
 	public function write8($value) { return self::wrN(1, $value); }
 	public function write16($value) { return self::wrN(2, $value); }
 	public function write24($value) { return self::wrN(3, $value); }
@@ -160,6 +163,7 @@ final class GWS_Message
 	public static function wrF($float) { return pack("f", floatval($float)); }
 	public static function wrD($double) { return pack("d", doubleval($double)); }
 	public static function wrS($string) { return urlencode($string)."\0"; }
+	public static function wrTS() { return self::wr32(time()); }
 	public static function wrN($bytes, $value)
 	{
 		$value = (int)$value;
