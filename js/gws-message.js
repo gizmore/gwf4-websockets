@@ -5,6 +5,8 @@ function GWS_Message(buffer) {
 	this.SYNC = 0; 
 	this.INDEX = 0;
 	this.LENGTH = 0;
+	this.CMD = -1;
+
 	if (buffer) {
 		this.BUFFER = new DataView(buffer);
 		this.LENGTH = buffer.byteLength;
@@ -58,7 +60,7 @@ function GWS_Message(buffer) {
 	};
 	this.readFloat = function(index) {  var f = this.BUFFER.getFloat32(this.index(index), true); this.INDEX += 4; return f; };
 	this.readDouble = function(index) {  var d = this.BUFFER.getFloat64(this.index(index), true); this.INDEX += 8; return d; };
-	this.readCmd = function() { return this.read16() & 0x7FFF; }
+	this.readCmd = function() { this.CMD = this.CMD < 0 ? (this.read16() & 0x7FFF) : this.CMD; return this.CMD; }
 	this.readMid = function() { return this.read24(); };
 
 	////////////

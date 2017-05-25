@@ -42,6 +42,25 @@ final class GWS_Global
 		}
 	}
 	
+	public static function getOrLoadUserById($id)
+	{
+		if ($user = self::getUserByID($id))
+		{
+			return $user;
+		}
+		return self::loadUserById($id);
+	}
+	
+	public static function loadUserById($id)
+	{
+		if ($user = GWF_User::getByID($id))
+		{
+			self::$USERS[$user->getName()] = $user;
+		}
+		return $user;
+	}
+	
+	
 	public static function getOrLoadUser($name, $allowGuests)
 	{
 		if (false !== ($user = self::getUser($name)))

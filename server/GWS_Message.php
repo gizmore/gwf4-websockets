@@ -58,6 +58,7 @@ final class GWS_Message
 	##############
 	### Reader ###
 	##############
+	public function hasMore() { return $this->index < strlen($this->data); }
 	public function readPayload() { return $this->data; }
 	public function readJSON() { return json_encode($this->data); }
 	public function read8($signed=true, $index=-1) { return $this->readN(1, $signed, $index); }
