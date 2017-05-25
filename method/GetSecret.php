@@ -10,7 +10,8 @@ final class Websockets_GetSecret extends GWF_Method
 		$key = trim($this->module->binarySecret(), "'");
 		$json = array(
 			'user' => $user,
-			'key' => $key
+			'key' => $key,
+			'cookie' => GWF_Session::getCookieValue(),
 		);
 		return json_encode($json);
 	}
